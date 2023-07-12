@@ -1,0 +1,2461 @@
+<template>
+    <div :class="['aihouse', {fixed:fixHeader}]"> <!-- 상단 고정 클래스명 fixed -->
+        <div class="buttonWrap">
+            <template  v-if="!(this.$router.currentRoute.path === '/ai/single')">
+                <button class="btn arw right btn-bigview" @click="excuteOutLink('/ai/single')">큰화면 보기</button>
+                <button type="button" title="닫기" class="btn btn-popclose" @click="goToPage('/ai')" v-if="pagelist">닫기</button>
+                <button type="button" title="닫기1" class="btn btn-popclose" @click="goToPage('/ai/list')" v-else>닫기</button>
+            </template>
+             <button class="btn arw left btn-mapview" v-else>지도와 함께 보기</button>
+        </div>
+        <div class="infotop">
+            <div class="buttonWrap">
+                <button type="button" class="btn btn-shar">공유</button>
+                <button type="button" title="관심부동산으로 등록" aria-label="관심부동산으로 등록" class="iconbtn btn-like"></button>
+            </div>
+            <div class="infobadge">
+                <span class="label round darkblueline">아파트</span>
+                <!--
+                        모바일)
+                        규제 1개 이상 default: 최초 한가지 노출(최고단계), 클릭시 나머지 노출
+                        스크롤시 다시 default로 복귀
+                    -->
+                <div class="rulebadge mobile" :class="{active:labelactive}">
+                    <button type="button" class="btn-badgeview"><span role="button" class="label rule1 arw right" @click="labelClick">투기</span></button>
+                    <span class="label rule1">투기</span>
+                    <span class="label rule2">투기과열</span>
+                    <span class="label rule3">조정</span>
+                </div>
+            </div>
+            <div class="infonm">
+                <button type="button" class="btn btn-back arw left" title="이전페이지 보기" aria-label="이전페이지 보기" @click="goBack()"></button>
+                <h1>
+                    <span>헬리오시티</span> <!-- 단지명 말줄임표 때문에 span 태그 추가 22.02.15 -->
+                    <button type="button" class="btn round btn-roadview r30">로드뷰</button>
+                </h1>
+            </div>
+            <div class="infotxt">
+                <span class="addr">서울특별시 송파구 송파대로 345</span>
+                <!-- 툴팁 위치 조정으로 태그 수정 -->
+                <span style="position:relative;">
+                    <span role="button" class="btn-infotoggle arw up" :class="[{up:allContent},{down:!allContent}]"  @click="toggleContent('allContent')">
+                        <template v-if="allContent">건물정보 숨기기</template>
+                        <template v-else>건물정보 보이기</template>
+                    </span>
+                    <div role="tooltip" class="tooltip bottom" v-if="guidetip1">
+                        <span aria-hidden="true" class="arrow" style="left:47.5%"></span>
+                        <div class="flexbox">
+                            <p>버튼을 눌러서 건물정보를 확인하세요!</p>
+                            <button type="button" title="툴팁닫기" class="tipclose"  @click="TipToggle('guidetip1', guidetip1)"></button>
+                        </div>
+                    </div>
+                </span>
+            </div>
+        </div>
+        <div class="infotoggle" v-if="allContent">
+            <!-- 건물정보 -->
+            <section class="accordionCon">
+                <h2 class="toggletit" :class="{active:moreContent}">
+                    <strong class="listtit">건물정보</strong>
+                    <button type="button" class="btn sm round btn-golink r30" @click="executeOutLink('https://www.gov.kr/mw/AA020InfoCappView.do?CappBizCD=15000000098&amp;HighCtgCD=A02004002&amp;Mcode=10205')">건축물대장</button>
+                    <button type="button" class="btn sm round btn-golink r30" @click="executeOutLink('https://www.gov.kr/main?a=AA020InfoCappViewApp&amp;HighCtgCD=A09005&amp;CappBizCD=13100000026&amp;tp_seq=03')">토지대장</button>
+                    <button type="button" class="btn sm round btn-golink r30">토지이용계획</button>
+                    <button type="button" class="arw down" title="건물정보더보기" aria-label="건물정보더보기" @click="toggleContent('moreContent')"></button>
+                </h2>
+                <div class="togglecont" v-if="moreContent">
+                    <div class="textlists">
+                        <span class="bulletlist">2018.12(4년차)</span>
+                        <span class="bulletlist">9,510세대</span>
+                        <span class="bulletlist">총 84개동</span>
+                        <span class="bulletlist">최고 10~35층 / 지하 3층</span>
+                        <span class="bulletlist">면적 61.37~194.20㎡</span>
+                        <span class="bulletlist">지역난방 열병합</span>
+                        <span class="bulletlist">계단식(현관구조)</span>
+                        <span class="bulletlist">주차 총 11,983대(세대당 1.3대)</span>
+                        <span class="bulletlist full">현대산업개발, 현대건설, 삼성물산(건설사)</span>
+                        <span  class="bulletlist">건폐율 19%</span>
+                        <!-- 하단의 btn-info 버튼 태그의 클래스명 icoinfo4 => icoinfo6 으로 변경 22.03.10 -->
+                        <span class="bulletlist halflast">용적율 <button type="button" class="iconbtn icoinfo6" title="자세히보기" aria-label="자세히보기" @click="tooltipOpen($event, 'open','toolTip','용적율')"></button>285%</span>
+                        <span class="bulletlist">건축면적 158.69㎡</span>
+                        <span class="bulletlist halflast">건축면적 158.69㎡</span>
+                        <span class="bulletlist">대지면적 269㎡</span>
+                        <!-- 하단의 btn-info 버튼 태그의 클래스명 icoinfo4 => icoinfo6 으로 변경 22.03.10 -->
+                        <span class="bulletlist halflast">연면적 <button type="button" class="iconbtn icoinfo6" title="자세히보기" aria-label="자세히보기" @click="tooltipOpen($event, 'open', 'toolTip','연면적')"></button>158.69㎡</span>
+                        <span class="bulletlist full">용도지역 제2종일반주거지역</span>
+                        <span class="bulletlist full">용도지구 과밀억제권역 등…</span>
+                        <div role="tooltip" class="tooltip bottom" :style="'top:'+ toolTop+'px; left:'+ toolleft+'px;'" v-if="toolTip">
+                            <span aria-hidden="true" class="arrow" style="left:calc(50% - 5px);"></span>
+                            <div class="flexbox">
+                                <p>{{tipcontent}}</p>
+                                <button type="button" title="툴팁닫기" class="tipclose" @click="tooltipOpen($event,'close', 'toolTip')"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- 층별정보 -->
+            <section class="accordionCon">
+                <h2 class="toggletit" :class="{active:moreContent1}">
+                    <strong class="listtit">층별정보</strong>
+                    <button type="button" class="arw down" title="건물정보더보기" aria-label="건물정보더보기" @click="toggleContent('moreContent1')"></button>
+                </h2>
+                <div class="togglecont" v-if="moreContent1">
+                    <div class="tablegroup type2">
+                        <div class="line header">
+                            <div class="cell">층별</div>
+                            <div class="cell">용도</div>
+                            <div class="cell">면적</div>
+                            <div class="cell">구조</div>
+                        </div>
+                        <div class="line">
+                            <div class="cell">15층</div>
+                            <div class="cell">오피스텔</div>
+                            <div class="cell">191.73㎡</div>
+                            <div class="cell">철근콘크리트구조</div>
+                        </div>
+                        <div class="line">
+                            <div class="cell">14층</div>
+                            <div class="cell">오피스텔</div>
+                            <div class="cell">191.73㎡</div>
+                            <div class="cell">철근콘크리트구조</div>
+                        </div>
+                        <div class="line">
+                            <div class="cell">13층</div>
+                            <div class="cell">오피스텔</div>
+                            <div class="cell">191.73㎡</div>
+                            <div class="cell">철근콘크리트구조</div>
+                        </div>
+                        <div class="line">
+                            <div class="cell">12층</div>
+                            <div class="cell">의원</div>
+                            <div class="cell">191.73㎡</div>
+                            <div class="cell">철근콘크리트구조</div>
+                        </div>
+                        <div class="line">
+                            <div class="cell">1층</div>
+                            <div class="cell">의원</div>
+                            <div class="cell">191.73㎡</div>
+                            <div class="cell">철근콘크리트구조</div>
+                        </div>
+                        <div class="line">
+                            <div class="cell">지하 1층</div>
+                            <div class="cell">기타일반업무시설</div>
+                            <div class="cell">191.73㎡</div>
+                            <div class="cell">철근콘크리트구조</div>
+                        </div>
+                        <div class="line">
+                            <div class="cell">지하 1층</div>
+                            <div class="cell">기타일반업무시설</div>
+                            <div class="cell">191.73㎡</div>
+                            <div class="cell">철근콘크리트구조</div>
+                        </div>
+                        <div class="line">
+                            <div class="cell">지하 1층</div>
+                            <div class="cell">기타일반업무시설</div>
+                            <div class="cell">191.73㎡</div>
+                            <div class="cell">철근콘크리트구조</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- 토지정보 -->
+            <section class="accordionCon">
+                <h2 class="toggletit" :class="{active:moreContent2}">
+                    <strong class="listtit">토지정보</strong>
+                    <button type="button" class="btn sm round btn-golink r30" @click="executeOutLink('https://www.gov.kr/main?a=AA020InfoCappViewApp&amp;HighCtgCD=A09005&amp;CappBizCD=13100000026&amp;tp_seq=03')">토지대장</button>
+                    <button type="button" class="btn sm round btn-golink r30">토지이용계획</button>
+                    <button type="button" class="arw down" title="건물정보더보기" aria-label="건물정보더보기"  @click="toggleContent('moreContent2')"></button>
+                </h2>
+                <div class="togglecont" v-if="moreContent2">
+                    <div class="textlists">
+                        <span class="bulletlist">지목 대</span>
+                        <span class="bulletlist">고저 평지</span>
+                        <span class="bulletlist">형상 세로장방</span>
+                        <span class="bulletlist">도로조건 광대소각</span>
+                        <span class="bulletlist full">용도지역 2종일반주거지역</span>
+                        <span class="bulletlist full">용도지구 과밀억제권역, 상대보호구역</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <TabContent
+            :tabcontentname="'가격별'"
+            :tabsublist="'tabbox tabtype3'"
+            :tabtexts="tabtextsType"
+            v-on:tabactive="tabClick"
+        >
+            <template slot="panel">
+                <!-- 3.3㎡당 가격 || 면적별 가격 -->
+                <div class="areachoice" v-if="tabnum===0||tabnum===1">
+                    <jQueryScrollbar style="width:100%;" :useCtrl="{direction: 'x',customClass:'typeSmall' }">
+                        <div class="widthareabtn">
+                            <button type="button" class="btn"
+                                :class="{active:widthActive===index}"
+                                v-for="(item, index) in widthType"
+                                :key="index"
+                                v-html="item.text"
+                                @click="Activetype('widthActive', index)"
+                            />
+                        </div>
+                    </jQueryScrollbar>
+                    <div class="choicecontrol">
+                        <button type="button" class="btn-allview arw " :class="[{down:!toolTip2}, {up:toolTip2}]" @click="tooltipOpen($event, 'open','toolTip2' )"><span>전체보기</span></button>
+                        <button class="btn-change iconbtn type2" :class="{on:typechange}" title="평전환" aria-label="평전환" @click="typechange = !typechange"></button>
+                    </div>
+                    <div class="layer-m ailayer arealayer" v-if="toolTip2"> <!-- 'arealayer' 클래스 추가 22.03.04 -->
+                        <div class="layerhead">
+                            <strong class="tit">면적 선택</strong>
+                            <button class="btn-change iconbtn type2" :class="{on:typechange}"  title="평전환" aria-label="평전환" @click="typechange = !typechange"></button>
+                            <button type="button" class="btn btn-popclose" title="닫기" @click="tooltipOpen($event, 'close','toolTip2' )"> 닫기</button>
+                        </div>
+                        <div class="layerbody">
+                            <jQueryScrollbar>
+                                <div class="tablegroup type3 choice">
+                                    <div class="line header">
+                                        <div class="cell">공급/전용</div>
+                                        <div class="cell">세대수</div>
+                                        <div class="cell">KB AI 추정가</div>
+                                        <div class="cell">공감랩</div>
+                                        <div class="cell">밸류 쇼핑</div>
+                                        <div class="cell">보스턴에임스</div>
+                                    </div>
+                                    <jQueryScrollbar :maxHeight="'220px'"> <!-- maxHeight 220px로 변경 22.03.04 -->
+                                        <div class="linegroup average"> <!-- 면적별 가격 탭에서는 '단지평균' 영역 삭제! -->
+                                            <div class="line active">
+                                                <div class="cell">단지평균</div>
+                                                <div class="cell">-</div>
+                                                <div class="cell">7,014만</div>
+                                                <div class="cell">7,205만</div>
+                                                <div class="cell">6,820만</div>
+                                                <div class="cell">7,316만</div>
+                                            </div>
+                                        </div>
+                                        <div class="linegroup pyeongtype2">
+                                            <div class="line">
+                                                <div class="cell">61A/39.10㎡</div>
+                                                <div class="cell">268세대</div>
+                                                <div class="cell">7,014만</div>
+                                                <div class="cell">7,205만</div>
+                                                <div class="cell">6,820만</div>
+                                                <div class="cell">7,316만</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">61B/39.17㎡</div>
+                                                <div class="cell">25세대</div>
+                                                <div class="cell">7,014만</div>
+                                                <div class="cell">7,205만</div>
+                                                <div class="cell">6,820만</div>
+                                                <div class="cell">7,316만</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">61C/39.17㎡</div>
+                                                <div class="cell">115세대</div>
+                                                <div class="cell">7,014만</div>
+                                                <div class="cell">7,205만</div>
+                                                <div class="cell">6,820만</div>
+                                                <div class="cell">7,316만</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">61D/39.17㎡</div>
+                                                <div class="cell">79세대</div>
+                                                <div class="cell">7,014만</div>
+                                                <div class="cell">7,205만</div>
+                                                <div class="cell">6,820만</div>
+                                                <div class="cell">7,316만</div>
+                                            </div>
+                                        </div>
+                                        <div class="linegroup pyeongtype3">
+                                            <div class="line">
+                                                <div class="cell">72A/49.19㎡</div>
+                                                <div class="cell">79세대</div>
+                                                <div class="cell">7,014만</div>
+                                                <div class="cell">7,205만</div>
+                                                <div class="cell">6,820만</div>
+                                                <div class="cell">7,316만</div>
+                                            </div>
+                                        </div>
+                                    </jQueryScrollbar>
+                                </div>
+                            </jQueryScrollbar>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3.3㎡당 가격 || 면적별 가격 -->
+                <div class="tabcon scrollview" role="tabpanel" v-if="tabnum===0||tabnum===1"> <!-- scrollview 클래스 추가 22.02.15 -->
+                    <!-- AI 추정가 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">AI 추정가</h1>
+                            <div class="titRighttext">기준일 2021.10.01</div>
+                        </div>
+                        <div class="colorbox">
+							<div class="box companytype1">
+								<span class="company">KB AI 추정가</span>
+								<strong>7,000만</strong><span>/3.3㎡</span>
+							</div>
+							<div class="box companytype2">
+								<span class="company">공감랩</span>
+								<strong>6,500만</strong><span>/3.3㎡</span>
+							</div>
+							<div class="box companytype3">
+								<span class="company">밸류쇼핑</span>
+								<strong>5,000만</strong><span>/3.3㎡</span>
+							</div>
+							<div class="box companytype4">
+								<span class="company">보스턴에임스</span>
+								<strong>6,200만</strong><span>/3.3㎡</span>
+							</div>
+							<div class="box block companytype5">
+								<div class="txt">
+									<p class="item">
+                                        <!-- 하단의 btn-info 버튼 태그의 클래스명 icoinfo4 => icoinfo6 으로 변경 22.03.10 -->
+                                        KB시세 <button type="button" class="btn-info icoinfo6" title="자세히보기" aria-label="자세히보기" @click="tooltipOpen($event, 'open', 'toolTip1', 'KB시세')"></button>
+                                        <strong>6,667만</strong> (기준일 2021.10.19)
+                                    </p>
+									<p class="item">최근 실거래가 <strong>7,000만</strong> (2021.08월/15층)</p>
+									<p class="item">매물평균가 <strong>7,701만</strong></p>
+                                    <!-- tooltip (모바일에서는 dim 처리 된 팝업) -->
+                                    <div role="tooltip" class="tooltip white" :style="'top:'+(toolTop-20)+'px;'" v-if="toolTip1">
+                                        <div class="inner">
+                                            <div class="tit">
+                                                <strong>KB부동산 시세</strong>
+                                                <button type="button" title="툴팁닫기" class="tipclose" @click="tooltipOpen($event, 'close', 'toolTip1')"></button>
+                                            </div>
+                                            <ul class="dotlist"> <!--  클래스 변경 /  텍스트 수정 22.04.18 -->
+                                                <li>50세대 이상의 아파트, 오피스텔 대상</li>
+                                                <li>상위/일반/하위 평균가의 세가지 가격으로 제공
+                                                    <span><strong>※데이터허브 KB시세는 일반평균가 제공</strong></span>
+                                                </li>
+                                                <li>매주 금요일 오전 업데이트
+                                                    <span>※ 단, 휴일 등 조사불가 시 업데이트되지 않습니다.</span>
+                                                </li> <!-- 텍스트 추가 22.03.24 -->
+                                                <li>저작권법, 콘텐츠산업진흥법 등 관련 법률에 의거 무단 사용이 금지됩니다.</li>
+                                                <li>시세의견 등록, 신규 시세조사 요청, 조사 제외 단지 기준 등 자세한 사항은 <strong role="button" class="underline" @click="ModalLayer($event,'open','usePricelayer')">여기</strong>를 참고하세요</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+								</div>
+								<span role="button" class="source arw right">출처: KB부동산</span>
+							</div>
+						</div>
+                        <p class="guideinfo icoinfo1">
+							AI추정가는 부동산 빅데이터를 기초로 알고리즘 기반에 따른 산출된 가격이며 감정평가금액은 아닙니다.
+							<button type="button" class="txtview" @click="ModalLayer($event,'open','introlayer')">자세히</button>
+						</p>
+                    </div>
+                    <!-- AI 추정가 시계열 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+							<h2 class="titdepth2">AI 추정가 시계열</h2>
+							<div class="titRighttext"><button type="button" title="차트옵션메뉴" class="iconbtn btn-dotmore black"></button></div>
+						</div>
+                        <div class="aibtnbox">
+							<span role="button" class="tab line active">라인</span>
+							<span role="button" class="tab bar">막대</span>
+						</div>
+                        <div class="sortbar">
+							<label for="halfyear" class="custom-radio custom-control">
+								<input type="radio" name="time" id="halfyear" checked="">
+								<span>6개월</span>
+							</label>
+							<label for="oneyear" class="custom-radio custom-control">
+								<input type="radio" name="time" id="oneyear">
+								<span>1년</span>
+							</label>
+							<label for="all" class="custom-radio custom-control">
+								<input type="radio" name="time" id="all">
+								<span>전체</span>
+							</label>
+						</div>
+                        <!-- 시계열 차트 영역 -->
+                        <div class="chartArea" >
+                            <div class="checkedlegend">
+                                <div class="default">
+                                    <button class="btn-check companytype1 active">KB AI 추정가</button>
+                                    <button class="btn-check companytype2 active">하우스머치</button>
+                                    <button class="btn-check companytype3 active">밸류쇼핑</button>
+                                    <button class="btn-check companytype4 active">보스턴에임스</button>
+                                    <button class="btn-check companytype5 active">KB시세</button>
+                                    <button class="btn-check companytype6 active">실거래</button>
+                                </div>
+                                <div class="future">
+                                    <button class="btn-check modeltype1 active">리치고 헤라</button> <!-- 미래가격 모델명 변경 22.04.15 -->
+                                    <button class="btn-check modeltype2 active">보스턴에임스</button> <!-- 미래가격 모델명 변경 22.03.04 -->
+                                </div>
+                            </div>
+                            <span class="watermark horizongray"></span>
+                            <!-- 시계열 차트 박스 -->
+                            <div class="chartBox" style="height:274px;position:relative">
+                                <button type="button" class="btn btn-preprice">미래가격</button>
+
+                                <!-- 부동산지도 차트 툴팁 모바일일경우 mobile 클래스 추가 -->
+                                <div class="chartTip aitip" style="left:0; top:0">
+                                    <div class="tiptit">
+                                        <span>21.06</span>
+                                        <span class="change dataend">
+                                            <span>21.06 (3개월)</span>
+                                            <span class="sortbar">실거래 16건</span>
+                                        </span>
+                                    </div>
+                                    <div class="lineboxtable">
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype1">KB AI 추정가</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>8,400만</strong>
+                                                <span class="numup">+ 1,700만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype2">공감랩</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>8,400만</strong>
+                                                <span class="numup">+ 1,700만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype3">밸류쇼핑</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>5,400만</strong>
+                                                <span class="numdown">- 1,300만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype4">보스턴에임스</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>5,400만</strong>
+                                                <span class="numdown">- 1,300만(3.4%)</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="linebox line">
+                                            <div class="now">
+                                                <span class="legendlist companytype5">KB시세</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>8,400만</strong>
+                                                <span class="numup">+ 1,700만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype6">실거래 평균</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>8,400만</strong>
+                                                <span class="numup">+ 1,700만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="chartTip aitip draggable" style="margin-left:150px;">
+                                    <div class="tiptit">
+                                        <span>21.06</span>
+                                        <span class="change dataend">
+                                            <span>21.06 (3개월)</span>
+                                            <span class="sortbar">실거래 16건</span>
+                                        </span>
+                                    </div>
+                                    <div class="lineboxtable">
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype1">KB AI 추정가</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>8,400만</strong>
+                                                <span class="numup">+ 1,700만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype2">공감랩</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>8,400만</strong>
+                                                <span class="numup">+ 1,700만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype3">밸류쇼핑</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>5,400만</strong>
+                                                <span class="numdown">- 1,300만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype4">보스턴에임스</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>5,400만</strong>
+                                                <span class="numdown">- 1,300만(3.4%)</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="linebox line">
+                                            <div class="now">
+                                                <span class="legendlist companytype5">KB시세</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>8,400만</strong>
+                                                <span class="numup">+ 1,700만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="linebox">
+                                            <div class="now">
+                                                <span class="legendlist companytype6">실거래 평균</span>
+                                                <strong>6,700만</strong>
+                                            </div>
+                                            <div class="change">
+                                                <strong>8,400만</strong>
+                                                <span class="numup">+ 1,700만(3.4%)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="chartTip" style="margin-left:155px;">
+                                    <!-- 미래가격 툴팁 타이틀, 닫기 버튼 삭제 22.04.15 -->
+                                    <!-- <button type="button" title="차트툴팁닫기" class="chartclose">차트툴팁닫기</button> -->
+                                    <!-- <span class="tiptit">미래가격</span> -->
+                                    <div class="tablebox">
+                                        <div class="line header">
+                                            <div class="cell">기간</div>
+                                            <div class="cell underline">리치고 <span>헤라</span></div> <!-- 태그, 클래스 변경 22.04.15 -->
+                                            <div class="cell">보스턴<span>에임스</span></div> <!-- 태그, 클래스 변경 22.04.15 -->
+                                        </div>
+                                        <div class="line active"> <!-- 해당하는 기간에 볼드 처리 및 범례색상 적용 22.04.15 -->
+                                            <div class="cell">+6개월</div>
+                                            <div class="cell">6,700만</div>
+                                            <div class="cell">-</div>
+                                        </div>
+                                        <div class="line">
+                                            <div class="cell">+12개월</div>
+                                            <div class="cell">7,200만</div>
+                                            <div class="cell">6,700만</div>
+                                        </div>
+                                        <div class="line">
+                                            <div class="cell">+18개월</div>
+                                            <div class="cell">6,700만</div>
+                                            <div class="cell">-</div>
+                                        </div>
+                                        <div class="line">
+                                            <div class="cell">+24개월</div>
+                                            <div class="cell">7,200만</div>
+                                            <div class="cell">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 시계열 차트 데이터가 없을 때 -->
+                                <div class="nodata aichart">AI 추정가를 제공하지 않습니다.</div>
+                            </div>
+
+                        </div>
+                        <!-- 테이블 영역 -->
+                        <div class="tradingtable house aihouse prevalue"> <!-- 'prevalue' 클래스 추가 22.03.04  -->
+                            <div class="tablelabel">
+                                <span>구분</span>
+                                <span>KB AI 추정가</span>
+                                <span>공감랩</span>
+                                <span>밸류쇼핑</span>
+                                <span>보스턴에임스</span>
+                                <span>KB시세<button type="button" class="btn-tooltip type2">툴팁보기</button></span> <!-- KB시세 툴팁 아이콘 추가 22.04.18 -->
+                                <span>실거래 평균</span>
+                            </div>
+                            <jQueryScrollbar  style="width:100%;">
+                                <div class="scrollin-pir">
+                                    <div class="tablelbody">
+                                        <div class="tablelow">
+                                            <span class="day" v-for="(day, index) in tradingdays" :key="index"  v-html="day.day" :class="{selected:index == 3}"></span>
+                                        </div>
+                                        <div class="tablelow"  v-for="(item, index) in tradingdatas1" :key="index">
+                                            <span class="datavalue" v-for="(data, index) in item.data" :key="index" v-html="data.value"  :class="{selected:index == 3}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </jQueryScrollbar>
+                        </div>
+                        <p class="guideinfo icoinfo1"><!-- 텍스트 수정 22.04.18 -->
+							AI추정가 및 미래가격은 업체에서 제공하는 자료로 본 자료 활용에 대한 책임(투자판단 등)은 전적으로 이용자에게 있으며 당행은 이와 관련하여 아무런 책임을 부담하지 않습니다.
+						</p>
+                        <!-- KB시세 tooltip (모바일에서는 dim 처리 된 팝업) -->
+                    </div>
+                    <!-- 실거래 매매 --> <!-- 실거래 매매에서 탭 삭제 22.01.25 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">실거래 매매</h1>
+                            <div class="titRighttext center"> <!-- 기간선택 라디오 버튼 추가 22.03.04 -->
+                                <label for="halfyear3" class="custom-radio custom-control">
+                                    <input type="radio" name="time3" id="halfyear3" checked="">
+                                    <span>6개월</span>
+                                </label>
+                                <label for="oneyear3" class="custom-radio custom-control">
+                                    <input type="radio" name="time3" id="oneyear3">
+                                    <span>1년</span>
+                                </label>
+                                <label for="twoyear3" class="custom-radio custom-control">
+                                    <input type="radio" name="time3" id="twoyear3">
+                                    <span>2년</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="salebox">
+                            <!-- 차트 영역 삽입 -->
+                            <div class="innerbox">
+                                <div class="chartlegend square type2">
+                                    <span class="legend dash">단지 거래량</span> <!-- 범례명 변경 22.03.04 -->
+                                </div>
+                                <!-- 그래프 삽입 -->
+                                <div style="height:240px; background:#fafafa;">
+                                    <span class="watermark horizongray"></span>
+                                </div>
+                            </div>
+                            <!-- 테이블 영역 -->
+                            <div class="innerbox">
+                                <div class="textbox">
+                                    <span>출처:국토교통부</span>
+                                </div>
+                                <div class="tablegroup type1 realtrade" style="padding-bottom:30px;">
+                                    <div class="line header">
+                                        <div class="cell">계약일</div>
+                                        <div class="cell">실거래가/3.3㎡</div>
+                                        <div class="cell">공급/전용</div>
+                                        <div class="cell">층</div>
+                                    </div>
+                                    <div class="line" v-for="(item, index) in tradingdatas2" :key="index">
+                                        <div class="cell" v-html="item.days"></div>
+                                        <div class="cell costcell" >
+                                            <span v-html="item.cost.total"></span>
+                                            <span v-html="item.cost.unit"></span>
+                                        </div>
+                                        <div class="cell" v-html="item.width"></div>
+                                        <div class="cell" v-html="item.floor"></div>
+                                    </div>
+                                    <button type="button" class="btn-viewmore arw down">더보기</button>
+                                </div>
+                                <!-- 페이징 삭제 더보기버튼으로 변경 22.04.21 -->
+                                <!-- <div class="paging type1">
+                                    <span role="button" class="arw left" title="이전페이지" aria-label="이전페이지"></span>
+                                    <span class="num now">1</span>
+                                    <span class="num all">3</span>
+                                    <span role="button" class="arw right" title="다음페이지" aria-label="다음페이지"></span>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                    <!--  인근 거래 사례 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">인근 거래 사례</h1>
+                        </div>
+                        <div class="chartArea">
+                            <div class="checkedlegend type2">
+                                <button class="btn-check casetype1 active">헬리오시티</button>
+                                <button class="btn-check casetype2 active">인근 거래 사례</button>
+                                <div class="sortbar noline">
+                                    <label for="threemonth" class="custom-radio custom-control">
+                                        <input type="radio" name="time2" id="threemonth">
+                                        <span>3개월</span>
+                                    </label>
+                                    <label for="halfyear2" class="custom-radio custom-control">
+                                        <input type="radio" name="time2" id="halfyear2" checked="">
+                                        <span>6개월</span>
+                                    </label>
+                                    <label for="oneyear2" class="custom-radio custom-control">
+                                        <input type="radio" name="time2" id="oneyear2">
+                                        <span>1년</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <!-- 범위 슬라이더 영역-->
+                            <div class="rangebox">
+                                <RangeSlider
+                                    v-model="datavalue"
+                                    :marks="true"
+                                    :data="rangedata"
+                                />
+                            </div>
+                            <div class="unittextbox">
+                                <span>단위: 만원/3.3㎡</span>
+                            </div>
+                            <!-- 차트 영역 -->
+                            <div class="chartWrap">
+                                <div class="chartTip aitip" style="left:50%; top:0">
+                                    <div class="tiptit between">
+                                        <span>21.06</span>
+                                        <button type="button" class="btn-find" @click="toggleContent('tipinfoView')">위치</button>
+                                    </div>
+                                    <div class="linebox">
+                                        <span class="legendlist nocolor ellipsis">한양아파트</span>
+                                        <strong>6,514만</strong>
+                                    </div>
+                                    <div class="chartTipinfo location" v-if="tipinfoView" style="left:calc(50% - 164px); bottom:100%;">
+                                        <button type="button" class="btn btn-popclose" title="닫기" @click="toggleContent('tipinfoView')">닫기</button>
+                                        <img src="/images/samples/location_ex.png" alt="">
+                                    </div>
+                                </div>
+                                <div class="chartview" style="height:280px; background:#fafafa;">
+                                
+                                </div>
+                                <div class="ttb-rangebox">
+                                    <div class="unittextbox">
+                                        <span>(준공년도)</span>
+                                    </div>
+                                    <RangeSlider
+                                        v-model="datavalue2"
+                                        direction="ttb"
+                                        :style="`height: 160px;`"
+                                        :marks="true"
+                                        :data="rangedata2"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div class="aitableWrap">
+                                <div class="listbtngroup">
+                                    <span class="allnum">총 <em>120</em>건</span>
+                                    <div class="listbtn type1">
+                                        <button type="button" class="btn textline active">최신순</button>
+                                        <button type="button" class="btn textline">가격높은순</button>
+                                        <button type="button" class="btn textline">가격낮은순</button>
+                                    </div>
+                                </div>
+                                <!-- 인근거래사례 차트 호버 클릭시 노출 -->
+                                <div class="filterctrl">
+                                    <button type="button" class="btn-all arw left">전체보기</button>
+                                    <button type="button" class="btn btn-popclose" title="닫기">닫기</button>
+                                </div>
+                                <!-- 테이블 영역 -->
+                                <jQueryScrollbar  style="width:100%;">
+                                    <div class="tablegroup type1 realtrade2">
+                                        <div class="line header">
+                                            <div class="cell">계약일</div>
+                                            <div class="cell">단지명</div>
+                                            <div class="cell">공급/전용</div>
+                                            <div class="cell">실거래가/3.3㎡</div>
+                                            <div class="cell">준공년도</div>
+                                            <div class="cell">직선거리</div>
+                                        </div>
+                                        <div class="line" v-for="(item, index) in tradingdatas6" :key="index">
+                                            <div class="cell" v-html="item.days"></div>
+                                            <div class="cell">
+                                                <span class="buildnm ellipsis" v-html="item.name"></span>
+                                            </div>
+                                            <div class="cell costcell">
+                                                <span v-html="item.area.supply"></span>
+                                                <span v-html="item.area.land"></span>
+                                            </div>
+                                            <div class="cell costcell">
+                                                <span v-html="item.price.trade"></span>
+                                                <span v-html="item.price.unit"></span>
+                                            </div>
+                                            <div class="cell" v-html="item.year"></div>
+                                            <div class="cell" v-html="item.distance"></div>
+                                        </div>
+                                    </div>
+                                </jQueryScrollbar>
+                                <div class="paging type1">
+                                    <span role="button" class="arw left" title="이전페이지" aria-label="이전페이지"></span>
+                                    <span class="num now">1</span>
+                                    <span class="num all">3</span>
+                                    <span role="button" class="arw right" title="다음페이지" aria-label="다음페이지"></span>
+                                </div>
+                                <div class="unittextbox right">
+                                    <span>출처:국토교통부</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 면적별 AI 추정가 비교 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">면적별 AI 추정가 비교</h1>
+                        </div>
+                        <TabContent
+                            :tabcontentname="'면적별 AI 추정가'"
+                            :tabsublist="'tabbox tabtype3'"
+                            :tabtexts="tabtextsType2"
+                            v-on:tabactive="tabClick"
+                        >
+                             <template slot="panel">
+                                 <!-- 면적 비교 선택 -->
+                                 <div class="areachoice">
+                                    <jQueryScrollbar style="width:100%;" :useCtrl="{direction: 'x',customClass:'typeSmall' }">
+                                        <div class="widthareabtn">
+                                            <button type="button" class="btn"
+                                                :class="{active:widthActive===index}"
+                                                v-for="(item, index) in widthType"
+                                                :key="index"
+                                                v-html="item.text"
+                                                @click="Activetype('widthActive', index)"
+                                            />
+                                        </div>
+                                    </jQueryScrollbar>
+                                    <div class="choicecontrol">
+                                        <button type="button" class="btn-allview arw " :class="[{down:!toolTip2}, {up:toolTip2}]" @click="tooltipOpen($event, 'open','toolTip3' )"><span>전체보기</span></button>
+                                        <button class="btn-change iconbtn type2" :class="{on:typechange}" title="평전환" aria-label="평전환" @click="typechange = !typechange"></button>
+                                    </div>
+                                    <div class="layer-m ailayer" v-if="toolTip3">
+                                        <div class="layerhead">
+                                            <button class="btn-change iconbtn type2" :class="{on:typechange}"  title="평전환" aria-label="평전환" @click="typechange = !typechange"></button>
+                                            <span class="alertxt">*3개까지 복수 선택 가능합니다.</span>
+                                            <button type="button" class="btn btn-popclose" title="닫기" @click="tooltipOpen($event, 'close','toolTip3' )"> 닫기</button>
+                                        </div>
+                                        <div class="layerbody">
+                                            <div class="areabtnbox">
+                                                <jQueryScrollbar :maxHeight="'210px'">
+                                                    <button
+                                                        v-for="(item, index) in widthlists"
+                                                        :key="index"
+                                                        v-html="item.text"
+                                                        :class="['areabtn',{pyeongtype2:item.type==='소형'},{pyeongtype3:item.type==='중형'},{pyeongtype4:item.type==='대형'}] "
+                                                    />
+                                                </jQueryScrollbar>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tabcon" role="tabpanel" v-if="tabnum2===0">
+                                    <div class="chartArea">
+                                        <div class="chartlegend square type2">
+                                            <span class="legend companytype1">KB AI 추정가</span>
+                                            <span class="legend companytype2">공감랩</span>
+                                            <span class="legend companytype3">밸류쇼핑</span>
+                                            <span class="legend companytype4">보스턴에임스</span>
+                                            <span class="textlabel">단위: 만원</span>
+                                        </div>
+                                        <div class="chartview" style="height:250px; background:#fafafa;">
+                                            <span class="watermark verticalgray"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tabcon" role="tabpanel" v-if="tabnum2===1">
+                                   면적 기준 영역
+                                </div>
+                             </template>
+                        </TabContent>
+                    </div>
+                    <!-- 지역별 AI 추정가 비교 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">지역별 AI 추정가 비교</h1>
+                        </div>
+                        <div class="chartArea">
+                            <div class="chartlegend region type2">
+                                <span class="legend"><i>헬</i>헬리오시티</span>
+                                <span class="legend"><i>가</i>가락동</span>
+                                <span class="legend"><i>송</i>송파구</span>
+                                <div class="textlabel">
+                                    <span>기준: 단지 평균</span>
+                                    <span>단위: 만원/3.3㎡</span>
+                                </div>
+                            </div>
+                            <div class="chartview" style="height:250px; background:#fafafa;">
+                                <span class="watermark verticalgray"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 매매 TOP5 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">매매 TOP5</h1>
+                        </div>
+                        <!-- 데이터가 존재하지 않을 때 22.04.04 -->
+                        <!-- <div class="ainodata">데이터가 없습니다.</div> -->
+                        <TabContent
+                            :tabcontentname="'매매 TOP5'"
+                            :tabsublist="'tabbox tabtype3'"
+                            :tabtexts="tabtextsType3"
+                            v-on:tabactive="tabClick"
+                        >
+                            <template slot="panel">
+                                <div class="tabcon" role="tabpanel" v-if="tabnum3===0">
+                                    <BarlineChart :barchartData="barchartData">
+                                        <template slot="unit">
+                                            <div class="unittextbox between">
+                                                <span>TOP5 단지</span>
+                                                <span>단위: 만원</span>
+                                            </div>
+                                        </template>
+                                        <template slot="unitBot">
+                                            <div class="unittextbox between">
+                                                <span>3.3㎡당 매매 상위 5개 아파트입니다.</span>
+                                                <span class="source arw right">출처: KB부동산</span>
+                                            </div>
+                                        </template>
+                                    </BarlineChart>
+                                </div>
+                                <div class="tabcon" role="tabpanel" v-if="tabnum3===1">
+                                    <BarlineChart :barchartData="barchartData">
+                                        <template slot="unit">
+                                            <div class="unittextbox between">
+                                                <span>TOP5 단지</span>
+                                                <span>단위: 만원</span>
+                                            </div>
+                                        </template>
+                                        <template slot="unitBot">
+                                            <div class="unittextbox between">
+                                                <span>3.3㎡당 매매 상위 5개 아파트입니다.</span>
+                                                <span class="source arw right">출처: KB부동산</span>
+                                            </div>
+                                        </template>
+                                    </BarlineChart>
+                                </div>
+                            </template>
+                        </TabContent>
+                    </div>
+                    
+                    <!--  송파구 전출입 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">{{movingTop5.location}} 전출입</h1>
+                            <div class="titRighttext"><button class="btn btn-dataguide arw right">인구통계</button></div>
+                        </div>
+                        <div class="moveinChartBox">
+                            <div class="unittextbox right">
+                                <span>단위: 명</span>
+                            </div>
+                            <jQueryScrollbar :useCtrl="{direction: 'x',customClass:'typeBig'}" >
+                                <div class="movingChart">
+                                    <div class="centerBox">
+                                        <strong class="tit">송파구</strong>
+                                        <div class="center" v-for="(item, index) in movingTotal" :key="index">
+                                            <div class="cell">
+                                                <span v-html="item.label"></span>
+                                                <strong v-html="item.count"></strong>
+                                                <span class="percent" :class="{plus:item.rate.type}">(<em v-html="item.rate.num"></em>%)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="movingline" v-for="(item, index) in movingTop5[0].locationMoving" :key="index">
+                                        <div class="movingin boxgroup">
+                                            <strong class="tit" v-if="index===0">{{movingTop5[0].location}}로 이사 온 TOP5</strong>
+                                            <div class="cell">
+                                                <div class="cellbg"><em v-html="index+1"></em>위 <em v-html="item.movingin.loaction"></em></div>
+                                                <strong class="num" v-html="item.movingin.num"></strong>
+                                            </div>
+                                        </div>
+                                        <div class="movingout boxgroup">
+                                            <strong class="tit" v-if="index===0">송파구에서 이사 간 TOP5</strong>
+                                            <div class="cell">
+                                                <div class="cellbg"><em v-html="index+1"></em>위 <em v-html="item.movingout.loaction"></em></div>
+                                                <strong class="num" v-html="item.movingout.num"></strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </jQueryScrollbar>
+                            <div class="unittextbox between">
+                                <span>
+                                    <em>기준: 2021년 8월</em>
+                                    <em>(%): 전월 대비 증감률</em>
+                                </span>
+                                <span>출처: 통계청</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--  심리지수 카드 구성에서 삭제 22.01.25 -->
+                    <!-- <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">심리지수</h1>
+                        </div>
+
+                        <p style="padding:30px 0; font-size:20px; color:red;">추후 업데이트 예정</p>
+                    </div> -->
+
+                    <!--  매물정보 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">매물정보</h1>
+                            <div class="titRighttext">
+                                <button class="btn btn-dataguide arw right">KB부동산</button>
+                            </div>
+                        </div>
+                        <div class="listgroup">
+                            <div class="imginfo">
+								<div class="img">
+									<img src="/images/common/group.png" alt="">
+								</div>
+								<div class="txt">
+									<strong class="buildnm">헬리오시티</strong>
+									<p class="buildinfo">
+										<span>2018.12(4년차)</span>
+										<span>9,510세대</span>
+									</p>
+									<p class="buildinfo">
+										<span>총 84개동</span>
+										<span>61.37~194.20m²</span>
+									</p>
+									<div class="tradeinfo">
+										<div class="mark brown">KB<br>시세</div>
+                                        <!-- 빌라인 경우
+                                        <div class="mark darkblue">하우스머치</div> -->
+										<p>
+											<span class="label orange">매매</span>
+											<span class="num">12억 8,333 ~ 38억</span>
+										</p>
+										<p>
+											<span class="label green">전세</span>
+											<span class="num">7억 1,667 ~ 23억 8,333</span>
+                                            <!-- 빌라인 경우
+                                            <span class="infotxt">*빌라는 하우스머치 추정 매매 시세만 제공</span> -->
+										</p>
+                                        
+									</div>
+								</div>
+							</div>
+                            <div class="mainnum">
+								<div class="item">
+									<span>매매</span>
+									<strong>133건</strong>
+								</div>
+								<div class="item">
+									<span>전세</span>
+									<strong>133건</strong>
+								</div>
+								<div class="item">
+									<span>월세</span>
+									<strong class="none">-</strong>
+								</div>
+							</div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- 동호별 가격 -->
+                <div class="tabcon" role="tabpanel" v-if="tabnum===2">
+                    <div class="cardbox">
+                        <div class="cardin">
+                            <div class="cardtit">
+                                <h1 class="titdepth2">동호별 AI 추정가</h1>
+                                <div class="titRighttext"><button class="btn btn-dataguide arw right">KB부동산</button></div> <!-- 22.02.04 태그 변경 -->
+                            </div>
+                            <!-- 동선택 -->
+                            <div class="overlayWrap">
+                                <div class="areachoice" >
+                                    <jQueryScrollbar style="width:100%;" :useCtrl="{direction: 'x',customClass:'typeSmall' }">
+                                        <div class="widthareabtn">
+                                            <button type="button" class="btn"
+                                                :class="{active:widthActive===index}"
+                                                v-for="(item, index) in dongType"
+                                                :key="index"
+                                                v-html="item.text"
+                                                @click="Activetype('widthActive', index)"
+                                            />
+                                        </div>
+                                    </jQueryScrollbar>
+                                    <div class="choicecontrol">
+                                        <button type="button" class="btn-allview arw " :class="[{down:!toolTip2}, {up:toolTip2}]" @click="tooltipOpen($event, 'open','toolTip2' )"><span>전체보기</span></button>
+                                        <button class="btn-change iconbtn type2" :class="{on:typechange}" title="평전환" aria-label="평전환" @click="typechange = !typechange"></button>
+                                    </div>
+                                    <div class="layer-m ailayer" v-if="toolTip2">
+                                        <div class="layerhead">
+                                            <strong class="tit">동 선택</strong>
+                                            <button type="button" class="btn btn-popclose" title="닫기" @click="tooltipOpen($event, 'close','toolTip2' )"> 닫기</button>
+                                        </div>
+                                        <div class="layerbody">
+                                            <jQueryScrollbar :maxHeight="'210px'">
+                                                <div class="areabtnbox sm">
+                                                    <button type="button" class="areabtn"
+                                                        :class="{active:widthActive===index}"
+                                                        v-for="(item, index) in dongType"
+                                                        :key="index"
+                                                        v-html="item.text"
+                                                        @click="Activetype('widthActive', index)"
+                                                    />
+                                                </div>
+                                            </jQueryScrollbar>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="aibox dongai">
+                                    <div class="controlbox">
+                                        <button class="btn-change iconbtn type2" title="평전환" aria-label="평전환"></button>
+                                        <div class="aibtnbox">
+                                            <span role="button" class="tab line active">라인</span>
+                                            <span role="button" class="tab bar">막대</span>
+                                        </div>
+                                    </div>
+                                    <div class="boxbtngroup">
+                                        <jQueryScrollbar style="width:100%;" :useCtrl="{direction: 'x',customClass:'typeSmall' }">
+                                            <div class="lineGroupWrap">
+                                                <div class="line">
+                                                    <button type="button" class="boxbtn active"><span>1301</span> (107J1m²)</button>
+                                                </div>
+                                                <div class="line">
+                                                    <button type="button" class="boxbtn"><span>1301</span> (107J1m²)</button>
+                                                </div>
+                                                <div class="line">
+                                                    <button type="button" class="boxbtn"><span>1301</span> (107J1m²)</button>
+                                                </div>
+                                                <div class="line">
+                                                    <button type="button" class="boxbtn"><span>1301</span> (107J1m²)</button>
+                                                </div>
+                                            </div>
+                                        </jQueryScrollbar>
+                                    </div>
+                                    <button type="button" class="btn-viewmore arw down">더보기</button>
+                                </div>
+                                <div class="colorbox">
+                                    <div class="box companytype1">
+                                        <span class="company">KB AI 추정가</span>
+                                        <strong>15.7억</strong>
+                                    </div>
+                                    <div class="box companytype2">
+                                        <span class="company">공감랩</span>
+                                        <strong>14.2억</strong>
+                                    </div>
+                                    <div class="box companytype3">
+                                        <span class="company">밸류쇼핑</span>
+                                        <strong>12.4억</strong>
+                                    </div>
+                                    <div class="box companytype4">
+                                        <span class="company">보스턴에임스</span>
+                                        <strong>13.5억</strong>
+                                    </div>
+                                    <!-- AI 추정가 데이터가 없을 때 -->
+                                    <!-- <div class="box none">AI 추정가를 제공하지 않습니다.</div> -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cardin">
+                            <div class="cardtit">
+                                <h1 class="titdepth2">AI 추정가 시계열<span class="dongname">101동 1301호 (107J1m²)</span></h1>
+                            </div>
+                            <div class="aibtnbox">
+                                <span role="button" class="tab line active">라인</span>
+                                <span role="button" class="tab bar">막대</span>
+                            </div>
+                            <div class="sortbar">
+                                <label for="halfyear" class="custom-radio custom-control">
+                                    <input type="radio" name="time" id="halfyear" checked="">
+                                    <span>6개월</span>
+                                </label>
+                                <label for="oneyear" class="custom-radio custom-control">
+                                    <input type="radio" name="time" id="oneyear">
+                                    <span>1년</span>
+                                </label>
+                                <label for="all" class="custom-radio custom-control">
+                                    <input type="radio" name="time" id="all">
+                                    <span>전체</span>
+                                </label>
+                            </div>
+                            <!-- 시계열 차트 영역 -->
+                            <div class="chartArea" >
+                                <div class="chartlegend circle">
+                                    <span class="legend companytype1">KB AI 추정가</span>
+                                    <span class="legend companytype2">공감랩</span>
+                                    <span class="legend companytype3">밸류쇼핑</span>
+                                    <span class="legend companytype4">보스턴에임스</span>
+                                </div>
+                                <span class="watermark horizongray"></span>
+                                <!-- 시계열 차트 박스 -->
+                                <div class="chartBox" style="height:274px;position:relative">
+                                    <button type="button" class="btn btn-preprice">미래가격</button>
+
+                                    <div class="chartTip aitip" style="left:0; top:0">
+                                        <div class="tiptit">
+                                            <span>21.06</span>
+                                            <span class="change dataend">
+                                                <span>21.06 (3개월)</span>
+                                                <span class="sortbar">실거래 16건</span>
+                                            </span>
+                                        </div>
+                                        <div class="lineboxtable">
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype1">KB AI 추정가</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>8,400만</strong>
+                                                    <span class="numup">+ 1,700만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype2">공감랩</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>8,400만</strong>
+                                                    <span class="numup">+ 1,700만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype3">밸류쇼핑</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>5,400만</strong>
+                                                    <span class="numdown">- 1,300만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype4">보스턴에임스</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>5,400만</strong>
+                                                    <span class="numdown">- 1,300만(3.4%)</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="linebox line">
+                                                <div class="now">
+                                                    <span class="legendlist companytype5">KB시세</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>8,400만</strong>
+                                                    <span class="numup">+ 1,700만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype6">실거래 평균</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>8,400만</strong>
+                                                    <span class="numup">+ 1,700만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="chartTip aitip draggable" style="margin-left:150px;">
+                                        <div class="tiptit">
+                                            <span>21.06</span>
+                                            <span class="change dataend">
+                                                <span>21.06 (3개월)</span>
+                                                <span class="sortbar">실거래 16건</span>
+                                            </span>
+                                        </div>
+                                        <div class="lineboxtable">
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype1">KB AI 추정가</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>8,400만</strong>
+                                                    <span class="numup">+ 1,700만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype2">공감랩</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>8,400만</strong>
+                                                    <span class="numup">+ 1,700만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype3">밸류쇼핑</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>5,400만</strong>
+                                                    <span class="numdown">- 1,300만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype4">보스턴에임스</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>5,400만</strong>
+                                                    <span class="numdown">- 1,300만(3.4%)</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="linebox line">
+                                                <div class="now">
+                                                    <span class="legendlist companytype5">KB시세</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>8,400만</strong>
+                                                    <span class="numup">+ 1,700만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="linebox">
+                                                <div class="now">
+                                                    <span class="legendlist companytype6">실거래 평균</span>
+                                                    <strong>6,700만</strong>
+                                                </div>
+                                                <div class="change">
+                                                    <strong>8,400만</strong>
+                                                    <span class="numup">+ 1,700만(3.4%)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="chartTip" style="margin-left:155px;">
+                                        <button type="button" title="차트툴팁닫기" class="chartclose">차트툴팁닫기</button>
+                                        <span class="tiptit">미래가격</span>
+                                        <div class="tablebox">
+                                            <div class="line header">
+                                                <div class="cell">기간</div>
+                                                <div class="cell">헤라<br><span class="underline">리치고</span></div> <!-- 미래가격 모델명 변경 22.03.04 -->
+                                                <div class="cell">보스턴에임스</div> <!-- 태그 변경, 미래가격 모델명 변경 22.03.04 -->
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">+6개월</div>
+                                                <div class="cell">6,700만</div>
+                                                <div class="cell">-</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">+12개월</div>
+                                                <div class="cell">7,200만</div>
+                                                <div class="cell">6,700만</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">+18개월</div>
+                                                <div class="cell">6,700만</div>
+                                                <div class="cell">-</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">+24개월</div>
+                                                <div class="cell">7,200만</div>
+                                                <div class="cell">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <p class="guideinfo icoinfo1">
+                                AI 추정가 및 미래 가격은 업체에서 제공하는 자료로 본 자료 활용에 대한 책임(투자판단 등)은 전적으로 이용자에게 있으며 당행은 이와 관련하여
+                                아무런 책임을 부담하지 않습니다.
+                            </p>
+                        </div>
+                        <div class="cardin">
+                            <div class="cardtit">
+                                <h1 class="titdepth2">공시가격 및 보유세</h1>
+                                <!-- 툴팁 버튼 추가 22.04.20 -->
+                                <button type="button" class="btn-tooltip type3" title="툴팁보기" aria-label="툴팁보기" @click="tooltipOpen($event,'open','toolTip4')"></button>
+                                <div class="cardbtnwrap"> <!-- 링크 버튼 추가 22.02.04 -->
+                                    <button type="button" class="btn btn-link arw right">공시가격</button>
+                                    <button type="button" class="btn btn-link arw right">국세청 기준시가</button>
+                                    <button type="button" class="btn btn-link arw right">시가표준액</button>
+                                </div>
+                                <span class="dongname">101동 1301호 (107J1m²)</span>
+
+                                <!-- 공시가격 및 보유세 툴팁 내용 추가 22.04.20 -->
+                                <div role="tooltip" name="publicPrice" class="tooltip bottom" v-if="toolTip4">
+                                    <span aria-hidden="true" class="arrow"></span>
+                                    <div class="flexbox">
+                                        <p>
+                                            이 집 한 채만 보유 가정 시 <span class="colortype-ffec99">예상 세금</span>을 알려드려요!<br>
+                                            1주택, 연령 60대 이하, 보유기간 4년, 소유지분 100%, 거주주택 가정<br>
+                                            공시가격 정보가 없는 경우 보유세 예시정보 제공이 어렵습니다.<br>
+                                            KB부동산 세금계산기에서 직접 계산해보세요.
+                                        </p>
+                                        <button type="button" title="툴팁닫기" class="tipclose" @click="tooltipOpen($event,'close','toolTip4')"></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="unittextbox between">
+                                <span>공시기준일: 2021.01.01</span>
+                                <span>
+                                    <!-- 라벨명 KB부동산 세금계산기 변경 및 클릭 이벤트 모달 레이어 추가 22.04.20 -->
+                                    <button class="btn btn-dataguide arw right" @click="ModalLayer($event,'open','kblandApplayer')">KB부동산 세금계산기</button>
+                                </span>
+                            </div>
+                            <div class="tablegroup type1"> <!-- 데이터 없을 때 nonedata 클래스 추가 22.04.19 -->
+								<div class="line header">
+									<div class="cell">기준년도</div>
+									<div class="cell">공시가격</div>
+									<div class="cell">재산세 <!-- 보유세 -> 재산세로 변경 22.01.25 -->
+                                        <!-- 툴팁 삭제 22.04.20 -->
+										<!-- <button type="button" class="btn-info icoinfo5" title="자세히보기" aria-label="자세히보기" @click="tooltipOpen($event,'open', 'toolTip4')"></button> -->
+									</div>
+									<div class="cell">종부세</div>
+									<div class="cell">합계</div>
+								</div>
+								<div class="line">
+									<div class="cell">2021</div>
+									<div class="cell">11억 4,100만</div>
+									<div class="cell">349만</div>
+									<div class="cell">16만</div>
+									<div class="cell">365만</div>
+								</div>
+								<div class="line">
+									<div class="cell">2020</div>
+									<div class="cell">10억 7,800만</div>
+									<div class="cell">305만</div>
+									<div class="cell">-</div>
+									<div class="cell">251만</div>
+								</div>
+								<div class="line">
+									<div class="cell">2019</div>
+									<div class="cell">9억 5,200만</div>
+									<div class="cell">280만</div>
+									<div class="cell">-</div>
+									<div class="cell">251만</div>
+								</div>
+								<div class="line">
+									<div class="cell">2018</div>
+									<div class="cell">8억 7,800만</div>
+									<div class="cell">251만</div>
+									<div class="cell">-</div>
+									<div class="cell">204만</div>
+								</div>
+								<div class="line">
+									<div class="cell">2017</div>
+									<div class="cell">7억 5,200만</div>
+									<div class="cell">204만</div>
+									<div class="cell">-</div>
+									<div class="cell">182만</div>
+								</div>
+                                <button class="btn-viewmore arw down">더보기</button>
+                                <!-- 재산세 툴팁 삭제 22.04.20 -->
+                                <!-- <div role="tooltip" class="tooltip bottom" :style="'top:'+(toolTop-10)+'px; left:'+(toolleft-40)+'px;'" v-if="toolTip4">
+                                    <span aria-hidden="true" class="arrow" style="left:calc(50% - 5px);"></span>
+                                    <div class="flexbox">
+                                        <p>
+                                            동일면적 최대 공시가격,<br>
+                                            1세대 주택, 보유자분 100%. 60세 이하, 거주주택.<br>
+                                            보유기간 5년 미만 가정 (종합부동산세 상동)
+                                        </p>
+                                        <button type="button" title="툴팁닫기" class="tipclose" @click="tooltipOpen($event,'close','toolTip4')"></button>
+                                    </div>
+                                </div> -->
+							</div>
+                        </div>
+                    </div>
+
+                    <!--  평면도 22.01.25 -->
+                    <div class="cardbox">
+                        <div class="cardtit">
+                            <h1 class="titdepth2">평면도</h1>
+                        </div>
+                        <div class="typeinfobox">
+                            <div class="typeimg">
+                                <img src="/images/samples/pyeong_ex.png" alt="평면도">
+                            </div>
+                            <div class="typetext">
+                                <div class="typetit pyeongtype3">
+                                    <strong class="">110Dm2</strong>
+                                    <span>(<em>1,480</em>세대)</span>
+                                </div>
+                                <div class="typelist">
+                                    <div class="typeinfo">
+                                        <strong>공급</strong>
+                                        <span>110.10m2</span>
+                                    </div>
+                                    <div class="typeinfo">
+                                        <strong>전용</strong>
+                                        <span>84.99m2</span>
+                                    </div>
+                                    <div class="typeinfo">
+                                        <strong>전용률</strong>
+                                        <span>93.16%</span>
+                                    </div>
+                                    <div class="typeinfo">
+                                        <strong>방/욕실</strong>
+                                        <span>3개/1개</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </template>
+        </TabContent>
+        <!-- KB시세 이용 안내 팝업 22.03.24 -->
+        <modal name="usePricelayer"
+            class="usePricelayer"
+            :clickToClose="false"
+            width="100%"
+            height="auto"
+        >
+            <div class="layer-popup">
+                <div class="layercon">
+                    <button type="button" class="btn btn-popclose" title="닫기" @click="ModalLayer($event,'close','usePricelayer')">닫기</button>
+                    <div class="inner type1">
+                        <strong class="tit type3">시세 이용 안내</strong>
+                        <jQueryScrollbar>
+                            <div class="guideCont">
+                                <!-- KB부동산 시세 무단사용 금지 안내 -->
+                                <section class="accordionCon">
+                                    <h2 class="toggletit">
+                                        <strong class="listtit">KB부동산 시세 무단사용 금지 안내</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            KB부동산 시세정보 및 홈페이지에서 사용되는 서비스표 등에 관한 모든 지식재산권은 KB국민은행에 있습니다.
+                                            따라서 당행의 사전 허락 없이 KB부동산 시세정보를 복제·배포·방송 또는 전송하거나 상업적 목적으로 활용하는 경우
+                                            또는 KB부동산 시세정보를 활용하면서 이 홈페이지에서 사용되는 서비스표 등을 사용하는 경우 저작권법,
+                                            콘텐츠산업진흥법 등 관련 법률에 의거하여 민·형사상의 책임을 부담할 수 있습니다.
+                                        </p>
+                                    </div>
+                                </section>
+                                <!-- KB부동산 시세조사 기준 안내 -->
+                                <section class="accordionCon">
+                                    <h2 class="toggletit">
+                                        <strong class="listtit">KB부동산 시세조사 기준 안내</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <strong class="txtcon">시세조사대상</strong>
+                                        <ol class="txtlist">
+                                            <li>① 공부상 공동주택 중 일정규모(5층, 50세대) 이상의 아파트, 오피스텔로 전용면적 등 단지정보가 존재하는 단지</li>
+                                            <li>② 일반업무시설 중 오피스텔로 일정규모 (5층,50세대) 이상이면서 전용면적 등 단지정보가 존재하는 단지</li>
+                                            <li>③ 등기부 열람 및 중개업소 등으로부터 조사한 분양률 또는 입주율이 70% 이상 진행된 단지</li>
+                                            <li>④ 지속적으로 조사 가능한 중개업소가 2개 이상 존재하는 단지. 단, 중개업소 부재 등 부득이한 경우 단수 중개업소 조사 가능</li>
+                                            <li>⑤ 1개 이상의 검증 중개업소 검증가격 또는 실거래가격이 시세조사 가격 ±10% 이내인 단지</li>
+                                            <li>⑥ 입주(예정)자와 시공사 등 사업주체간 분쟁 등이 없는 단지</li>
+                                            <li>⑦ 법적규제 (ex.전매제한) 등이 없어 정상 매매 거래가 가능한 단지</li>
+                                            <li>⑧ 분양 전환 예정의 임대아파트의 경우 관할 지자체의 승인 절차가 확인된 단지</li>
+                                            <li>⑨ 상시 조건에 준하는 단지이나 기타 부득이한 사정으로 지속적인 시세조사가 불가능할 것으로 예상되는 단지는 제외</li>
+                                        </ol>
+
+                                        <strong class="txtcon">시세조사 중지 기준</strong>
+                                        <ol class="txtlist">
+                                            <li>① 시세조사업소의 부재 등 지속적 조사가 불가한 경우</li>
+                                            <li>② 재건축으로 인한 아파트 멸실</li>
+                                            <li>③ 전매제한 단지 등 법적규제로 정상적인 매매거래가 불가능한 단지</li>
+                                            <li>④ 아파트 입주자 대표 및 그와 동등한 자격자의 요청</li>
+                                            <li>⑤ 해당단지에 대한 지속적인 민원, 분쟁 및 소송이 예상 또는 발생하여 정상적인 조사가 불가능한 단지</li>
+                                            <li>
+                                                ⑥ 특이거래(경공매 등)를 제외한 일반거래 발생 단지의 평균 실거래가격과 KB부동산시세 일반평균가 차이(Gap)가 아래 기준 이상인 단지
+                                                <table>
+                                                    <caption><span>시세조사 중지 기준 테이틀</span></caption>
+                                                    <thead>
+                                                        <tr>
+                                                            <th colspan="2">구분</th>
+                                                            <th>최근 3개월</th>
+                                                            <th>최근 6개월</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <th rowspan="3" style="width:18%;">동일 평형<br>세대수</th>
+                                                            <th>300세대 미만</th>
+                                                            <td>3건</td>
+                                                            <td>3건</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>300~1,000세대 미만</th>
+                                                            <td>세대수 1% 이상 거래</td>
+                                                            <td>세대수 1% 이상 거래</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>1,000세대 이상</th>
+                                                            <td>10건</td>
+                                                            <td>10건</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th colspan="2">중지기준</th>
+                                                            <td>3,400만 필지</td>
+                                                            <td>3,400만 필지</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </li>
+                                            <li>⑦ 상기 조건 외 기타 부득이한 사정으로 지속적인 시세조사가 불가능한 단지</li>
+                                        </ol>
+                                    </div>
+                                </section>
+                            </div>
+                        </jQueryScrollbar>
+                    </div>
+                </div>
+            </div>
+        </modal>
+        <!-- AI 추정가 소개하기 팝업 내용 수정 22.04.04 -->
+        <modal name="introlayer"
+            class="introlayer"
+            :clickToClose="false"
+            width="100%"
+            height="auto"
+        >
+            <div class="layer-popup">
+                <div class="layercon">
+                    <button type="button" class="btn btn-popclose" title="닫기" @click="ModalLayer($event,'close','introlayer')">닫기</button>
+                    <div class="inner type1">
+                        <strong class="tit type3">AI 추정가 소개</strong>
+                        <jQueryScrollbar>
+                            <div role="tablist" class="tabbox tabtype3">
+                                <span role="button" class="tab"
+                                    v-for="(tab, index) in tabtextsType4"
+                                    :key="index"
+                                    v-html="tab"
+                                    :class="{active:index==activeNum}"
+                                    :tabindex="!(index==activeNum) ? -1 : 1"
+                                    @click="tabClick(index, 'AI 추정가 소개')"
+                                />
+                            </div>
+                        </jQueryScrollbar>
+                        <jQueryScrollbar class="introScroll">
+                            <!-- KB AI 추정가 22.04.04 주석처리 -->
+                            <!-- <div class="tabcon"  role="tabpanel" v-if="tabnum4===0">
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down active">
+                                        <strong class="listtit">Q1. AI추정가 및 회사소개</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            KB AI 추정가는 KB금융그룹의 경영연구소와 국내유명 산학기관과의 협업을 통해
+                                             아파트 실거래가와 가격에 영향을 줄 수 있는 여러 변수들을 고려하여 개발된
+                                              자동가격산정시스템(AVM, Automated Valuation Model)모델입니다.
+                                        </p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q2. 산출방식</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">KB AI 추정가를 산출하는 모델의 변수는 크게 4가지로 구성되어 있습니다.</p>
+                                        <ol class="txtlist">
+                                            <li>1. 실거래가격 이력과 주변 단지들의 비교매매사례 정보</li>
+                                            <li>2. 아파트 고유의 특성 변수</li>
+                                            <li>3. 해당 아파트 단지로부터의 여러 주변 시설과의 거리 변수</li>
+                                            <li>4. 각 시기별 부동산 거래량과 유동인구 변수</li>
+                                        </ol>
+                                        <p class="txtcon">실거래가격에는 대상물의 거래 간격과 층수, 계약일, 연식 등이 포함되어 있으며, 아파트 주변 시설은 전철역, 상권, 공원, 학교, 병원, 문화시설 등입니다.</p>
+                                        <p class="txtcon">KB아파트 통계지수를 활용하여 유사 가격권의 현재 아파트 가격을 산정할 때 현재 시점으로 가격을 전환하는 Momentum(모멘텀)방식으로 정확도를 높이는 학습 방법을 이용하였습니다.</p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q3. 적용모델 및 신뢰도</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">머신러닝 모델로는 LightGBM과 XGBoost모델을 사용하였으며, 딥러닝 모델로 CNN(Convolution Neural Network)를 활용하였습니다.</p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q4. 주의사항</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <strong class="txtcon">법적한계안내</strong>
+                                        <p class="txtcon">
+                                            본 추정가는  "감정평가 및 감정평가사에관한법률"에 따른 <strong>감정평가가 아닙니다.</strong><br>
+                                            따라서 추정가는 금융거래의 기초 자료(대출 및 신용평가 등) 및 감정평가로 활용할 수 없으며 참고 지표로만 활용하시길 권합니다.<br>
+                                            참고 자료 이외 활용에 따른 이용자의 피해와 손실에 대해 <strong>당행은 아무런 책임을 지지 않습니다.</strong>
+                                        </p>
+                                        <strong class="txtcon">정보 정확성</strong>
+                                        <p class="txtcon">
+                                            기계학습으로 산출된 추정가이므로 현장의 실거래와 KB시세와 차이가 발행할 수 있습니다. <strong>공공데이터의 오류와 누락된
+                                             정보는 실시간 반영되지 않습니다.</strong>
+                                        </p>
+                                        <strong class="txtcon">저작권</strong>
+                                        <p class="txtcon">
+                                            KB부동산 데이터 허브 홈페이지에서 사용되는 서비스표 등에 관한 모든 지식재산권은 KB국민은행에 있습니다.
+                                             따라서 당행의 사전 허락 없이 KB부동산 데이터 허브 가격정보(추정가, KB시세)를 사용·복제·배포·방송 또는 전송하거나
+                                              상업적 목적으로 활용하는 경우 <strong>저작권법, 콘텐츠산업진흥법 등 관련 법률에 의거하여 민·형사상의 책임을 부담할 수 있습니다.</strong>
+                                        </p>
+                                        <p class="txtcon sub">KB부동산 데이터허브 AI추정가 문의는 <span role="button" class="txtlink">네이버 포스트</span>에 댓글로 남겨주세요 </p>
+                                    </div>
+                                </section>
+                            </div> -->
+                            <!-- 하우스머치 -->
+                            <div class="tabcon"  role="tabpanel" v-if="tabnum4===0">
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down active">
+                                        <strong class="listtit">Q1. AI추정가 및 회사소개</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            하우스머치(HowsmucH)란 주택(House)의 가격(How Much)을 연상하게 하는 단어로서,
+                                             (주)공감랩이 제공하는 자동가격산정시스템(AVM, Automated Valuation Model)의 상표명입니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            (주)공감랩은 KB부동산의 연립다세대주택 시세정보를 제공하는 기업이며, 금융위원회가 선정한 혁신금융서비스 및 지정대리인 서비스 기업입니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            하우스머치는 기계학습 기반의 빅데이터 처리 알고리즘을 활용하여
+                                             그 동안 <strong>시세 제공이 어려웠던 전국의 주거용 집합건물 및 오피스텔을 대상으로 KB부동산데이터허브에 추정가를 제공합니다.</strong>
+                                        </p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q2. 산출방식</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            하우스머치 추정가는 건축물대장, 실거래가 등 정부에서 개방하는 다양한 부동산 빅데이터를 다층적으로 정제하고
+                                             공간통계학적 머신러닝 알고리즘을 기반으로 가장 오차가 적은 값을 추정하여 가격을 제공합니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            실거래자료는 거래상황 및 신고 과정에서 다양한 이상치(Outlier)와 잡음(Noise)을 수반합니다.
+                                             또한 거래가격은 단 하나의 숫자로 수렴하지 않고 높은 편차를 보이기 마련인데, 하우스머치는 인근의
+                                              다양한 실거래 신고사례를 공인된 기계학습 알고리즘을 통하여 패턴분석을 수행하여 오차가 적은 가격을 산출합니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            따라서 실거래가 발생한 적이 없는 주택에 대해서도 인근의 실거래 신고 데이터를 기반으로 신뢰도 높은 추정가를 제공할 수 있습니다.
+                                        </p>
+                                        <p class="txtcon">KB부동산 데이터허브에 제공하는 추정가 기준은 해당 단지 내에서 각 호가 속하는 유사 면적-층 타입 별로 산출된 추정가입니다.</p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q3. 적용모델 및 신뢰도</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            하우스머치 추정가는 사람의 주관이 배제된 공간통계학적 기계학습 연산을 바탕으로 산출되므로, 각 호마다 추정가의 신뢰도에는 차이가 존재합니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            하우스머치에서는 국내에서 유일하게 개별 호 마다 신뢰도를 4단계로 등급화하여 사용자가 직관적으로 이해하실 수 있는 별도의 심사 콘텐츠를 운영하고 있습니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            KB데이터허브에는 현재 매매 추정가 단일 정보만을 제공하고 있으며, 대상 단지의 타입별 평균 수준 등으로 제공될 수 있습니다.
+                                            따라서 하우스머치에서 별도로 제공하는 호별 추정가와는 차이가 있을 수 있습니다.
+                                        </p>
+                                        <p class="txtcon">보다 자세한 서비스는 <span class="txtlink txtblue">하우스머치</span> 홈페이지 를 통하여 별도의 개별 호 단위의 추정가, 신뢰도, 산출근거 등 보다 다양한 콘텐츠를 확인할 수 있습니다.</p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q4. 주의사항</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <strong class="txtcon">법적한계안내</strong>
+                                        <p class="txtcon">
+                                            하우스머치가 제공하는 추정가는 "감정평가 및 감정평가사에관한법률"에 따른 <strong>감정평가가 아닙니다.</strong>
+                                        </p>
+                                        <p class="txtcon">
+                                            따라서 참고 자료의 하나로서만 활용하실 것으로 권장하며, 대출, 투자 등 다양한 이해관계를 가진 여러분의 개별적인 활용의 결과
+                                             및 그에 따른 피해나 손실에 대해 <strong>일절 책임을 지지 않음을 고지</strong>합니다.
+                                        </p>
+                                        <strong class="txtcon">정보 정확성</strong>
+                                        <p class="txtcon">
+                                            정부에서 개방하는 건축물대장 전산데이터를 기반으로 작성되므로, 현황 복층, 개별 리모델링 등 공부에 반영되지 않는
+                                             미신고 현황을 포함하지 않습니다. <strong>공공데이터의 오류 및 누락된 정보는 실시간 반영하지 않습니다.</strong>
+                                        </p>
+                                        <p class="txtcon">
+                                            하우스머치 추정가는 알고리즘에 기반하여 산정되는 서비스로서, 기계가 시세를 산출하지 못하는
+                                             다양한 사유(특이성이 높은 주택, 거래사례가 희소한 지역, 실거래사례의 가격편차가 큰 지역 등)로 인하여
+                                              추정가를 제공하지 못하는 주택이 발생할 수 있습니다.
+                                        </p>
+                                        <strong class="txtcon">저작권</strong>
+                                        <p class="txtcon">
+                                            하우스머치가 제공하는 가격 데이터에 관한 모든 저작권, 지식재산권 등은 (주)공감랩에게 있습니다.
+                                             따라서 당행과 (주)공감랩의 사전 허락 없이 데이터를 사용·복제·배포·방송 또는 전송하거나 상업적 목적으로
+                                              활용하는 경우 <strong>저작권법, 콘텐츠산업진흥법 등 관련 법률에 의거하여 민·형사상의 책임을 부담할 수 있습니다.</strong>
+                                        </p>
+                                        <p class="txtcon">
+                                            하우스머치  <span role="button" class="txtlink">www.howsmuch.com</span><br>
+                                            대표전화  070-4464-8445
+                                        </p>
+                                    </div>
+                                </section>
+                            </div>
+                            <!-- 밸류쇼핑 -->
+                            <div class="tabcon"  role="tabpanel" v-if="tabnum4===1">
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down active">
+                                        <strong class="listtit">Q1. AI추정가 및 회사소개</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            밸류쇼핑은 (주)감정평가법인 세종과 (주)4차혁명이 개발한 전국 부동산 자동가격산정시스템(AVM, Automated Valuation Model)입니다.
+                                        </p>
+                                        <p class="txtcon">(주)4차혁명은 2019년 금융위원회가 선정한 혁신금융서비스 및 지정대리인 서비스 기업입니다. </p>
+                                        <p class="txtcon">
+                                            밸류쇼핑은 부동산 Big Data를 부동산 가격형성요인별로 세분화 분석하여 부동산 종류에 관계없이 전국 약 5천만건의 부동산 가격을 자동으로 산정하는 AVM입니다.
+                                        </p>
+                                        <div class="textbox between txtcon">
+                                            <strong>밸류쇼핑 부동산 가격 산정 범위</strong>
+                                            <span>조사일: 2021.12</span>
+                                        </div>
+                                        <div class="tablegroup type3 outline">
+                                            <div class="line header">
+                                                <div class="cell">유형</div>
+                                                <div class="cell">건수</div>
+                                                <div class="cell">가격 산정 여부</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">아파트</div>
+                                                <div class="cell">1,100만 호</div>
+                                                <div class="cell">O</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">연립다세대</div>
+                                                <div class="cell">270만 호</div>
+                                                <div class="cell">O</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">단독다가구</div>
+                                                <div class="cell">270만 호</div>
+                                                <div class="cell">O</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">오피스텔</div>
+                                                <div class="cell">100만 호</div>
+                                                <div class="cell">O</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">구분상가</div>
+                                                <div class="cell">160만 호</div>
+                                                <div class="cell">△</div>
+                                            </div>
+                                            <div class="line">
+                                                <div class="cell">토지건물</div>
+                                                <div class="cell">3,400만 필지</div>
+                                                <div class="cell">O</div>
+                                            </div>
+                                        </div>
+                                        <p class="txtcon">
+                                            부동산 빅데이터: 실거래 데이터, 경공매 사례, 밸류쇼핑 산정 약 5천만건의 매월의 시장가격, 공부정보(건축물대장, 토지대장, 공시가격 등)
+                                        </p>
+                                        <p class="txtcon">밸류쇼핑은 은행을 비롯한 다수의 기관에 부동산데이터 및 가격정보를 제공하고 있습니다.</p>
+                                        <p class="txtcon">밸류쇼핑은 <strong>KB부동산 데이터 허브에 구분상가를 제외한 물건 유형에 대해서 추정가를 제공합니다.</strong></p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q2. 산출방식</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            (주)4차혁명 내의 기업부설연구소(20.08.24 설립)에서 부동산 전문인력과 IT 인력이 부동산 가격산정 알고리즘을 지속적으로 개발, 검증하고 있습니다.
+                                        </p>
+                                        <p class="txtcon">다수의 특허를 출원하여 부동산 가격산정에 대한 2건의 특허가 등록되었으며 금융위에서 개발자금도 지원받고 있습니다.</p>
+                                        <p class="txtcon">
+                                            밸류쇼핑은 지번 입력만으로 부동산의 시장가격과 기본정보(면적, 용도지역, 이용상황, 사용승인일 등)와
+                                             가격산정 근거를 한눈에 볼 수 있으며 지번 혹은 호별로 가격이 산정됩니다.
+                                        </p>
+                                        <p class="txtcon">부동산을 아래의 유형별로 산정하여 유형별 특성에 따른 자료수집 및 분석과 시장가격을 산정합니다.</p>
+                                        <ul class="dashlist txtcon">
+                                            <li>아파트, 연립다세대, 오피스텔, 구분상가, 토지건물(상업용, 주거용,  농업용, 기타), 단독다가구,  지식산업센터등</li>
+                                            <li>(주)감정평가법인 세종이 부동산 가격 및 정보의 적정성을 지속적으로 검증하여 피드백을 반영합니다.</li>
+                                        </ul>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q3. 적용모델 및 신뢰도</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            밸류쇼핑은 부동산 빅데이터인 실거래가, 경공매 사례, 밸류쇼핑이 산정한 매월의 5,000만 건의 시장가격 등을 부동산 유형별로
+                                             가격형성요인(사회적, 경제적, 행정적)을 세분화하여 가격을 산정합니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            밸류쇼핑은 상기 부동산 빅데이터를 특허받은 "PNU를 활용한 부동산 유사사례 DB생성방법"과 다중회귀분석 등의
+                                             통계기법을 활용하여 물적 유사성, 공간적 유사성, 시간적 유사성에 따라 분류하여 적정 사례를 적용합니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            아울러 특허등록된 "부동산 자동가격산정 방법"(등록번호: 10-22540**)에 따라 부동산 제 가격형성요인을 적용하여 시장가격을 산정합니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            매월 배치작업을 통해 산정된 약 5천만 건의 가격자료는 기존의 실거래 및 경공매 사례 등을 통해 산정된 시장가격을 검증하고
+                                             가격 정밀도를 높이는데 피드백 되고 있습니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            기업부설연구소에서 개발한 부동산 유형별 가격산정 알고리즘을 기반으로 토지 및 건물과 집합건물의 호별 시장가격을 제공합니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            단독, 다가구, 토지, 일반건물 추정가는 가격산정의 토대가 되는 유사사례의 적합성(본건과의 거리 및 거래시점 등)에
+                                             따라 1등급(신뢰도 좋음), 2등급(신뢰도 약함)으로 구분됩니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            밸류쇼핑의 시장가격은 시중은행권에서 사용하기 위해 6개월간 6,000건 이상 가격 신뢰도 테스트를 거쳤습니다.
+                                        </p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q4. 주의사항</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <strong class="txtcon">법적한계안내</strong>
+                                        <p class="txtcon">
+                                            밸류쇼핑이 제공하는 추정가는 실거래가 등으로 산정한 참고용 시장가격으로 "감정평가 및 감정평가사에관한법률"에 따른 <strong>감정평가가 아닙니다.</strong>
+                                        </p>
+                                        <p class="txtcon">
+                                            따라서 보다 상세한 정보나 법적 의미를 갖는 감정평가를
+                                             원하시는 경우 <span role="button" class="txtlink txtblue">밸류쇼핑 홈페이지</span>에 방문하셔서 정식 감정평가를 의뢰하여 주시기 바랍니다.
+                                        </p>
+                                        <strong class="txtcon">정보 정확성</strong>
+                                        <p class="txtcon">
+                                            반복적인 기계학습과정으로 산출된 추정가이므로 공부상의 상황과 실제 이용상황이 불일치하는 경우,
+                                             가격 급등락 지역 등은 현장의 실거래와 밸류쇼핑의 시세와 차이가 발행할 수 있습니다.
+                                              <strong>공공데이터의 오류와 누락된 정보는 실시간 반영되지 않습니다.</strong>
+                                        </p>
+                                        <strong class="txtcon">저작권</strong>
+                                        <p class="txtcon">
+                                            밸류쇼핑이 제공하는 데이터에 관한 지적재산권은 특허청에 등록된 자산으로 (주)감정평가법인 세종과
+                                             (주)4차혁명에게 있습니다. 따라서 (주)감정평가법인 세종과 (주)4차혁명의 사전 허락 없이 데이터를 사용·복제·배포·방송
+                                              또는 전송하거나 상업적 목적으로 활용하는 경우 <strong>저작권법, 콘텐츠산업진흥법 등 관련 법률에 의거하여 민·형사상의 책임을
+                                               부담할 수 있습니다.</strong>
+                                        </p>
+                                        <strong class="txtcon">데이터 제공</strong>
+                                        <p class="txtcon">밸류쇼핑이 산정하여 KB국민은행에 제공하는 매월 약 5,000만건의 시장가격자료 데이터를 희망하시는 경우 당사에 문의 주시기 바랍니다.</p>
+                                        <p class="txtcon">
+                                            밸류쇼핑 <span role="button" class="txtlink">valueshopping.land</span><br>
+                                            대표전화 02-569-7373
+                                        </p>
+                                    </div>
+                                </section>
+                            </div>
+                            <!-- 보스턴에임스 -->
+                            <div class="tabcon"  role="tabpanel" v-if="tabnum4===2">
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down active">
+                                        <strong class="listtit">Q1. AI추정가 및 회사소개</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            "보스턴에임스(Boston AI Management Services)는 AI 엔진 개발 전문회사로써 보스턴MIT와 샌프란시스코
+                                             버클리대학의 AI Scientist들이 주축으로 설립되었습니다. 그동안 개발한 Savvystat(AI based Econometric Prediction Platform)
+                                              플랫폼을 근간으로 게임, 참치수요/가격, 부동산가격예측모델을 전문적으로 개발, 현업에 적용하고 있습니다."
+                                        </p>
+                                        <p class="txtcon">
+                                            AreaStat(증강 부동산 AI: Augmented Real Estate AI)은 시공간 모델형태의 부동산 특화 AI 솔루션으로써,
+                                             머신러닝에 국가 경제 지표를 반영한 경제학적 모델링을 병합시켰습니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            한국 부동산 시장에서 중요한 상권, 역세권, 학군 등을 공간적으로 세밀하게 분석하고, 시/군/구/동 단위에서 생기는
+                                             연관성 및 역학 패턴을 시간적으로 분석함으로써 파악한 부동산 실거래가 패턴을 바탕으로 부동산의 현재가치를 예측 및 평가합니다.
+                                        </p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q2. 산출방식</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            상권, 역세권, 학군 등을 시/군/구/동 단위로 시공간 분석하고 부동산의 현재 가치를 예측한 뒤,
+                                             공시지가와 실거래 정보 등을 분석, 반영하여 부동산의 동, 층, 타입, 호 단위의 가격까지 평가합니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            앞서 모델 설명에 기재된 로직을 바탕으로, 거래가 뜸하게 이루어진 아파트, 거래가 아예 없는 신규 아파트,
+                                             그리고 제작 예정인 아파트에 대해 가치를 측정할 수 있습니다.
+                                        </p>
+                                        <p class="txtcon">
+                                            AreaStat에 사용되는 데이터는 크게 3가지 종류로 건축물 대장 데이터(연면적, 세대수 등),
+                                             상권데이터(대중교통, 병원, 학교 등), 경제데이터(소득 및 소비수준, 물가지수 및 통화량 등)를 포함하여
+                                              약 80여 가지의 변수를 활용합니다.
+                                        </p>
+                                        <p class="txtcon">AreaStat은 2006년부터 현재까지 약 15년간의 데이터를 학습하였습니다.</p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q3. 적용모델 및 신뢰도</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <p class="txtcon">
+                                            모델 형성에 사용된 ‘실거래가’는 국토교통부의 실거래가 데이터를 의미하며, ‘실거래 취소’가 발생한 거래들은 솔루션
+                                             형성 전에 제거하였습니다. 또한 적중률 검증방법으로써 MAPE (Mean absolute percentage error) 평가 방법을 사용하여
+                                              예측 정확도를 산출하였습니다. 전국적으로 평균 약 91.2%의 정확도를 보여주고 있습니다.
+                                        </p>
+                                        <p class="txtcon">단, 호재와 재개발 등 부동산 시장 특성상 발생하는 갑작스러운 변화의 경우 단기적(3~4주 이내)으로 반영되지 않을 수 있습니다.</p>
+                                    </div>
+                                </section>
+                                <section class="accordionCon">
+                                    <h2 class="toggletit arw down">
+                                        <strong class="listtit">Q4. 주의사항</strong>
+                                    </h2>
+                                    <div class="togglecont">
+                                        <strong class="txtcon">법적한계안내</strong>
+                                        <p class="txtcon">
+                                            보스턴에임스가 제공하는 추정가는 실거래가 등으로 산정한 참고용 시장가격으로
+                                             "감정평가 및 감정평가사에 관한 법률"에 따른 <strong>감정평가가 아닙니다.</strong>
+                                        </p>
+                                        <p class="txtcon">
+                                            따라서 추정가는 금융거래의 기초 자료(대출 및 신용평가 등) 및 감정평가로 활용할 수 없으며
+                                             참고 지표로만 활용하시길 권합니다. <strong>참고 자료 이외 활용에 따른 이용자의 피해와 손실에 대해 당사는 아무런 책임을 지지 않습니다.</strong>
+                                        </p>
+                                        <strong class="txtcon">정보 정확성</strong>
+                                        <p class="txtcon">
+                                            인공지능으로 산출된 추정가이므로, 추정가에 대한 정확성이나 신뢰성에 대해 어떠한 보증도 하지 않습니다.
+                                             현장의 실거래가와 추정가와 차이가 발생할 수 있으며 호재와 재개발 등 부동산 시장 특성상 발생하는
+                                              갑작스러운 변화나 <strong>공공데이터의 오류 및 누락된 정보는 실시간 반영되지 않습니다.</strong>
+                                        </p>
+                                        <strong class="txtcon">저작권</strong>
+                                        <p class="txtcon">
+                                            KB부동산 데이터 허브 홈페이지에서 사용되는 보스턴에임스 추정가 등에 관한 모든 지식재산권은 보스턴에임스에 있습니다.
+                                             따라서 당사의 사전 허락 없이 KB부동산 데이터 허브 가격정보(보스턴에임스 추정가)를
+                                              사용·복제·배포·방송 또는 전송하거나 상업적 목적으로 활용하는 경우 <strong>저작권법, 콘텐츠산업진흥법 등 관련 법률에
+                                               의거하여 민·형사상의 책임을 부담할 수 있습니다.</strong>
+                                        </p>
+                                        <p class="txtcon sub">KB부동산 데이터허브 AI추정가 문의는 <span role="button" class="txtlink">네이버 포스트</span>에 댓글로 남겨주세요</p>
+                                    </div>
+                                </section>
+                            </div>
+                        </jQueryScrollbar>
+                    </div>
+                </div>
+            </div>
+        </modal>
+        <!-- KB부동산앱 유도 팝업 추가 22.04.20 -->
+        <modal name="kblandApplayer"
+            class="kblandApplayer"
+            :clickToClose="false"
+            width="100%"
+            height="auto"
+        >
+            <div class="layer-popup">
+                <div class="layercon">
+                    <div class="inner">
+                        <strong class="tit type4"><span>KB부동산 APP</span>에서만<br>제공하는 서비스에요!</strong>
+                        <div class="appimg"></div>
+                        <div class="flexbox">
+                            <button type="button" class="btn-app iconplaystore" title="Play Store">Play Store</button>
+                            <button type="button" class="btn-app iconappstore" title="App Store">App Store</button>
+                        </div>
+                        <div class="layerbtn">
+                            <button type="button" class="btn md round blue" @click="ModalLayer($event,'close','kblandApplayer')">확인</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </modal>
+    </div>
+</template>
+<script>
+import BarlineChart from '@/components/elements/BarlineChart.vue';
+export default {
+    components: {
+        BarlineChart
+    },
+    props: {
+        scrollH: [Number]
+    },
+    data() {
+        return {
+            pagelist: null,
+            winwidth: 0,
+            fixHeader: false,
+            // 상단영역 데이터 
+            labelactive: false,
+            allContent: false,
+            moreContent: true,
+            moreContent1: true,
+            moreContent2: true,
+            tipcontent: null,
+            typechange: false,
+            toolTip: false,
+            toolTip1: false,
+            toolTip2: false,
+            toolTip3: false,
+            toolTip4: false,
+            toolTop: 0,
+            toolleft: 0,
+            guidetip1: true,
+            //탭 콘텐츠 데이터
+            tabnum: 0,
+            tabtextsType: ['3.3㎡당 가격', '면적별 가격', '동호별 가격'],
+            tabnum2: 0,
+            tabtextsType2: ['업체 기준', '면적 기준'],
+            tabnum3: 0,
+            tabtextsType3: ['송파구', '가락동'],
+            tabnum4: 0,
+            // tabtextsType4: ['KB AI 추정가', '하우스머치', '밸류쇼핑', '보스턴에임스'],
+            tabtextsType4: ['하우스머치', '밸류쇼핑', '보스턴에임스'],
+            //AI추정가소개팝업
+            activeNum: 0,
+            // 면적버튼 데이터
+            widthType: [
+                {text: '단지평균'},
+                {text: '61A/39.10㎡'},
+                {text: '61B/39.10㎡'},
+                {text: '61C/39.10㎡'},
+                {text: '61A/39.10㎡'},
+                {text: '61A/39.10㎡'},
+                {text: '61A/39.10㎡'},
+                {text: '61A/39.10㎡'}
+            ],
+            //동호별 데이터
+            dongType: [
+                {text: '101동'},
+                {text: '102동'},
+                {text: '103동'},
+                {text: '104동'},
+                {text: '105동'},
+                {text: '106동'},
+                {text: '107동'},
+                {text: '108동'},
+                {text: '109동'},
+                {text: '110동'},
+                {text: '111동'},
+                {text: '112동'},
+                {text: '113동'},
+                {text: '114동'},
+                {text: '115동'}
+            ],
+            widthActive: 0,
+            //테이블 날짜
+            tradingdays: [
+                {day: '20.07'},
+                {day: '20.08'},
+                {day: '20.09'},
+                {day: '20.10'},
+                {day: '20.11'},
+                {day: '20.12'},
+                {day: '21.01'},
+                {day: '21.02'},
+                {day: '21.03'},
+                {day: '21.04'},
+                {day: '21.05'},
+                {day: '21.06'},
+                {day: '21.07'},
+                {day: '21.08'},
+                {day: '21.09'},
+                {day: '21.10'}
+            ],
+            //테이블 데이터
+            tradingdatas1: [
+                {
+                    location: 'KB AI 추정가',
+                    data: [
+                        {day: '20.07', value: '805,271'},
+                        {day: '20.08', value: '805,271'},
+                        {day: '20.09', value: '805,271'},
+                        {day: '20.10', value: '805,271'},
+                        {day: '20.11', value: '805,271'},
+                        {day: '20.12', value: '805,271'},
+                        {day: '21.01', value: '805,271'},
+                        {day: '21.02', value: '805,271'},
+                        {day: '21.03', value: '805,271'},
+                        {day: '21.04', value: '805,271'},
+                        {day: '21.05', value: '805,271'},
+                        {day: '21.06', value: '805,271'},
+                        {day: '21.07', value: '805,271'},
+                        {day: '21.08', value: '805,271'},
+                        {day: '21.09', value: '805,271'},
+                        {day: '21.10', value: '805,271'}
+                        
+                    ]
+                },
+                {
+                    location: '공감랩',
+                    data: [
+                        {day: '20.07', value: '805,271'},
+                        {day: '20.08', value: '805,271'},
+                        {day: '20.09', value: '805,271'},
+                        {day: '20.10', value: '805,271'},
+                        {day: '20.11', value: '805,271'},
+                        {day: '20.12', value: '805,271'},
+                        {day: '21.01', value: '805,271'},
+                        {day: '21.02', value: '805,271'},
+                        {day: '21.03', value: '805,271'},
+                        {day: '21.04', value: '805,271'},
+                        {day: '21.05', value: '805,271'},
+                        {day: '21.06', value: '805,271'},
+                        {day: '21.07', value: '805,271'},
+                        {day: '21.08', value: '805,271'},
+                        {day: '21.09', value: '805,271'},
+                        {day: '21.10', value: '805,271'}
+                        
+                    ]
+                },
+                {
+                    location: '밸류쇼핑',
+                    data: [
+                        {day: '20.07', value: '805,271'},
+                        {day: '20.08', value: '805,271'},
+                        {day: '20.09', value: '805,271'},
+                        {day: '20.10', value: '805,271'},
+                        {day: '20.11', value: '805,271'},
+                        {day: '20.12', value: '805,271'},
+                        {day: '21.01', value: '805,271'},
+                        {day: '21.02', value: '805,271'},
+                        {day: '21.03', value: '805,271'},
+                        {day: '21.04', value: '805,271'},
+                        {day: '21.05', value: '805,271'},
+                        {day: '21.06', value: '805,271'},
+                        {day: '21.07', value: '805,271'},
+                        {day: '21.08', value: '805,271'},
+                        {day: '21.09', value: '805,271'},
+                        {day: '21.10', value: '805,271'}
+                        
+                    ]
+                },
+                {
+                    location: '보스턴에임스',
+                    data: [
+                        {day: '20.07', value: '805,271'},
+                        {day: '20.08', value: '805,271'},
+                        {day: '20.09', value: '805,271'},
+                        {day: '20.10', value: '805,271'},
+                        {day: '20.11', value: '805,271'},
+                        {day: '20.12', value: '805,271'},
+                        {day: '21.01', value: '805,271'},
+                        {day: '21.02', value: '805,271'},
+                        {day: '21.03', value: '805,271'},
+                        {day: '21.04', value: '805,271'},
+                        {day: '21.05', value: '805,271'},
+                        {day: '21.06', value: '805,271'},
+                        {day: '21.07', value: '805,271'},
+                        {day: '21.08', value: '805,271'},
+                        {day: '21.09', value: '805,271'},
+                        {day: '21.10', value: '805,271'}
+                        
+                    ]
+                },
+                {
+                    location: 'KB시세',
+                    data: [
+                        {day: '20.07', value: '805,271'},
+                        {day: '20.08', value: '805,271'},
+                        {day: '20.09', value: '805,271'},
+                        {day: '20.10', value: '805,271'},
+                        {day: '20.11', value: '805,271'},
+                        {day: '20.12', value: '805,271'},
+                        {day: '21.01', value: '805,271'},
+                        {day: '21.02', value: '805,271'},
+                        {day: '21.03', value: '805,271'},
+                        {day: '21.04', value: '805,271'},
+                        {day: '21.05', value: '805,271'},
+                        {day: '21.06', value: '805,271'},
+                        {day: '21.07', value: '805,271'},
+                        {day: '21.08', value: '805,271'},
+                        {day: '21.09', value: '805,271'},
+                        {day: '21.10', value: '805,271'}
+                        
+                    ]
+                },
+                {
+                    location: '실거래 평균',
+                    data: [
+                        {day: '20.07', value: '805,271'},
+                        {day: '20.08', value: '805,271'},
+                        {day: '20.09', value: '805,271'},
+                        {day: '20.10', value: '805,271'},
+                        {day: '20.11', value: '805,271'},
+                        {day: '20.12', value: '805,271'},
+                        {day: '21.01', value: '805,271'},
+                        {day: '21.02', value: '805,271'},
+                        {day: '21.03', value: '805,271'},
+                        {day: '21.04', value: '805,271'},
+                        {day: '21.05', value: '805,271'},
+                        {day: '21.06', value: '805,271'},
+                        {day: '21.07', value: '805,271'},
+                        {day: '21.08', value: '805,271'},
+                        {day: '21.09', value: '805,271'},
+                        {day: '21.10', value: '805,271'}
+                        
+                    ]
+                }
+            ],
+            tradingdatas2: [
+                {days: '21.07.01', cost: {total: '16억 5,000만', unit: '7,200만'}, width: '61A/39.10㎡', floor: '12층'},
+                {days: '21.07.01', cost: {total: '16억 5,000만', unit: '7,200만'}, width: '61A/39.10㎡', floor: '12층'},
+                {days: '21.07.01', cost: {total: '16억 5,000만', unit: '7,200만'}, width: '61A/39.10㎡', floor: '12층'},
+                {days: '21.07.01', cost: {total: '16억 5,000만', unit: '7,200만'}, width: '61A/39.10㎡', floor: '12층'},
+                {days: '21.07.01', cost: {total: '16억 5,000만', unit: '7,200만'}, width: '61A/39.10㎡', floor: '12층'}
+            ],
+            tradingdatas6: [
+                {days: '21.07.01', name: '한양아파트', area: {supply: '61A', land: '39.10㎡'}, price: {trade: '16억 5,000만', unit: '1억 7,200만'}, year: '2020년', distance: '10m'},
+                {days: '21.05.01', name: '래미안파크팰리스', area: {supply: '110D', land: '84.99㎡'}, price: {trade: '18억 2,000만', unit: '7,600만'}, year: '2019년', distance: '12m'},
+                {days: '21.03.06', name: '가락쌍용(1차)', area: {supply: '110D', land: '84.99㎡'}, price: {trade: '18억 2,000만', unit: '7,600만'}, year: '2018년', distance: '20m'},
+                {days: '21.12.16', name: '가람마을10단지동양엔파트월드메', area: {supply: '161A', land: '150.10㎡'}, price: {trade: '20억 4,000만', unit: '7,800만'}, year: '1992년', distance: '47m'},
+                {days: '21.07.18', name: '가락우성(1차)', area: {supply: '161A', land: '150.10㎡'}, price: {trade: '20억 4,000만', unit: '7,800만'}, year: '1992년', distance: '80m'}
+            ],
+            //평형데이터
+            widthlists: [
+                {text: '61A/39.10㎡', type: '소형'},
+                {text: '61B/39.12㎡', type: '소형'},
+                {text: '61B/39.12㎡', type: '소형'},
+                {text: '61B/39.12㎡', type: '소형'},
+                {text: '61A/39.10㎡', type: '중형'},
+                {text: '61B/39.12㎡', type: '중형'},
+                {text: '61B/39.12㎡', type: '중형'},
+                {text: '61B/39.12㎡', type: '중형'},
+                {text: '107A/84.98㎡', type: '대형'},
+                {text: '72B/49.19㎡', type: '대형'},
+                {text: '72C/49.19㎡', type: '대형'},
+                {text: '72D/49.19㎡', type: '대형'},
+                {text: '107J1/84.96㎡', type: '대형'},
+                {text: '107J2/84.96㎡', type: '대형'},
+                {text: '108G/84.98㎡', type: '대형'},
+                {text: '107A/84.98㎡', type: '대형'},
+                {text: '72B/49.19㎡', type: '대형'},
+                {text: '72C/49.19㎡', type: '대형'},
+                {text: '72D/49.19㎡', type: '대형'},
+                {text: '107J1/84.96㎡', type: '대형'},
+                {text: '107J2/84.96㎡', type: '대형'},
+                {text: '108G/84.98㎡', type: '대형'},
+                {text: '108H/84.98', type: '대형'}
+            ],
+            //매매 TOP5데이터
+            barchartData: [
+                {labelname: '리센츠', cost: '7508'},
+                {labelname: '잠실엘츠', cost: '7245'},
+                {labelname: '장미(1차)', cost: '7525'},
+                {labelname: '파크리오', cost: '7012'},
+                {labelname: '우성 1,2,3차', cost: '3879'}
+            ],
+            //전출입데이터
+            movingTotal: [
+                {label: '전입', count: '7,534', rate: {type: true, num: '2.3'}},
+                {label: '전출', count: '6,725', rate: {type: false, num: '2.5'}},
+                {label: '순입', count: '809', rate: {type: true, num: '1.45'}}
+            ],
+            //전출입순위데이터
+            movingTop5: [
+                {
+                    location: '송파구',
+                    locationMoving: [
+                        {
+                            movingin: {loaction: '강남구', num: '672'},
+                            movingout: {loaction: '강남구', num: '672'}
+                        },
+                        {
+                            movingin: {loaction: '강동구', num: '626'},
+                            movingout: {loaction: '강동구', num: '626'}
+                        },
+                        {
+                            movingin: {loaction: '성남시', num: '389'},
+                            movingout: {loaction: '성남시', num: '389'}
+                        },
+                        {
+                            movingin: {loaction: '서초구', num: '337'},
+                            movingout: {loaction: '서초구', num: '337'}
+                        },
+                        {
+                            movingin: {loaction: '광진구', num: '311'},
+                            movingout: {loaction: '광진구', num: '311'}
+                        }
+                    ]
+                }
+                
+            ],
+            //인근거래사례
+            rangedata: ['0', '250m', '500m', '750m', '1km(반경)'],
+            datavalue: ['0', '500m'],
+            rangedata2: ['2022', '2010', '2000', '1990', '1980'],
+            datavalue2: ['2022', '2000'],
+            tipinfoView: false
+        };
+    },
+    watch: {
+        scrollH: {
+            deep: true,
+            handler() {
+                !(this.$router.currentRoute.path === '/ai/single') ? this.detailFixed() : null;
+            }
+        }
+    },
+    created() {
+        this.winwidth = window.innerWidth;
+        this.handleResize();
+        !(this.$router.currentRoute.path === '/ai/list/detail') || this.$router.currentRoute.path === '/ai/single' ? this.pagelist = true : this.pagelist = false;
+    },
+    destroyed() {
+        window.removeEventListener('resize', this.handleResize);
+    },
+    mounted() {
+        console.log(!(this.$router.currentRoute.path === '/ai/list/detail') || this.$router.currentRoute.path === '/ai/single');
+        window.addEventListener('resize', this.handleResize);
+        !(this.$router.currentRoute.path === '/ai/list/detail') || this.$router.currentRoute.path === '/ai/single' ? this.pagelist = true : this.pagelist = false;
+    },
+    methods: {
+        handleResize(event) {
+            this.winwidth = window.innerWidth;
+        },
+        executeOutLink(url) {
+            window.open(url);
+        },
+        labelClick() {
+            this.labelactive = !this.labelactive;
+        },
+        toggleContent(type) {
+            console.log(type);
+            this[type] = !this[type];
+        },
+        Activetype(type, index) {
+            this[type] = index;
+        },
+        tooltipOpen(e, type, target, texttype) {
+            if (type === 'open') {
+                this[target] = true;
+                this.toolTop = e.target.parentNode.offsetTop + 40;
+                this.toolleft = e.target.parentNode.offsetLeft - 25;
+                if (texttype === '용적율') {
+                    this.tipcontent = '용적률 산정용 연면적';
+                } else if (texttype === '연면적') {
+                    this.tipcontent = '용적률 산정용 연면적1';
+                }
+                
+            } else if (type === 'close') {
+                this[target] = false;
+            }
+        },
+        //공통 == 탭클래스 처리 active
+        tabClick(parm, type) {
+            console.log(type);
+            this.activeNum = parm;
+            if (type === '가격별') {
+                this.tabnum = parm;
+            } else if (type === '면적별 AI 추정가') {
+                this.tabnum2 = parm;
+            } else if (type === '매매 TOP5') {
+                this.tabnum3 = parm;
+            } else if (type === 'AI 추정가 소개') {
+                this.tabnum4 = parm;
+            }
+        },
+        //퉅팁
+        TipToggle(type, status)  {
+            if (type === 'guidetip1') {
+                this.guidetip1 = !status;
+            }
+        },
+        //window open
+        excuteOutLink(link) {
+            window.open(link);
+        },
+        //레이어 팝업 열기 닫기
+        ModalLayer(e, type, layername) {
+            if (type === 'open') {
+                this.openModal(layername);
+            } else if (type === 'close') {
+                this.closeModal(layername);
+            }
+        },
+        //상세 팝업 헤더 고정
+        detailFixed() {
+            this.scrollH > 76 ? this.fixHeader = true : this.fixHeader = false;
+        }
+    }
+};
+</script>
